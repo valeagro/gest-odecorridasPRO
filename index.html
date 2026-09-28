@@ -48,6 +48,55 @@
             min-height: 100vh;
         }
 
+        /* Splash Screen Styles */
+        #splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-body);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease-out;
+        }
+
+        #splash-screen .logo-text {
+            color: var(--accent-gold);
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin: 0;
+            text-align: center;
+        }
+
+        #splash-screen .sub-text {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            margin-top: 8px;
+        }
+
+        #splash-screen .credits {
+            position: absolute;
+            bottom: 40px;
+            text-align: center;
+        }
+
+        #splash-screen .credits span {
+            display: block;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+
+        #splash-screen .credits strong {
+            color: var(--text-primary);
+            font-size: 1.1rem;
+            margin-top: 4px;
+            display: block;
+        }
+
         .app-container {
             width: 100%;
             max-width: 480px;
@@ -346,6 +395,18 @@
 </head>
 <body>
 
+<!-- SPLASH SCREEN -->
+<div id="splash-screen">
+    <div>
+        <h1 class="logo-text">Calculadora PRO</h1>
+        <p class="sub-text">Gestão de Corridas</p>
+    </div>
+    <div class="credits">
+        <span>Desenvolvido por</span>
+        <strong>Eliabe Araujo</strong>
+    </div>
+</div>
+
 <div class="app-container">
     <header>
         <div>
@@ -565,7 +626,8 @@
 </div>
 
 <!-- CONTAINER ESCONDIDO PARA GERAR O PDF -->
-<div id="pdf-container" style="position: absolute; left: -9999px; top: 0; width: 800px; background: #ffffff; color: #121214; padding: 40px; font-family: sans-serif; display: none;">
+<!-- Alterado de display: none para visibility: hidden e posicionado de forma a não estragar o layout visual, resolvendo o erro da captura em branco -->
+<div id="pdf-container" style="position: absolute; left: 0; top: 0; width: 800px; background: #ffffff; color: #121214; padding: 40px; font-family: sans-serif; z-index: -10; visibility: hidden;">
     <h1 style="text-align: center; color: #F59E0B; margin-bottom: 5px;">Relatório de Faturamento - Corridas</h1>
     <p style="text-align: center; color: #666; font-size: 14px; margin-top: 0;" id="pdf-data-geracao"></p>
 
@@ -628,6 +690,17 @@
     let textoReciboAtual = "";
 
     window.onload = function() {
+        // Lógica da Splash Screen
+        setTimeout(() => {
+            const splash = document.getElementById('splash-screen');
+            if(splash) {
+                splash.style.opacity = '0';
+                setTimeout(() => {
+                    splash.style.display = 'none';
+                }, 500); // Aguarda a animação de opacidade terminar
+            }
+        }, 2200); // Tela fica visível por 2.2 segundos
+
         carregarConfiguracoes();
         
         const agora = new Date();
@@ -790,7 +863,6 @@
         document.getElementById('receiptText').innerText = r;
         document.getElementById('resultCard').style.display = 'block';
 
-        // Melhoria: Guardar TODOS os dados cruciais para o PDF
         salvarNoHistorico({
             data: dataStr,
             origem: origem || 'Não especificada',
@@ -921,7 +993,7 @@
     }
 
     // -----------------------------------------------------------
-    // NOVA FUNCIONALIDADE: GERAR PDF COM GRÁFICOS E TABELAS
+    // FUNCIONALIDADE ATUALIZADA: GERAR PDF (CORREÇÃO DE TELA BRANCA)
     // -----------------------------------------------------------
     function exportarPDF() {
         let hist = JSON.parse(localStorage.getItem('juarez_calc_hist') || '[]');
@@ -937,7 +1009,6 @@
         let totalBruto = 0, totalLucro = 0, totalGas = 0, totalManut = 0, totalTerc = 0;
         let tbodyHtml = '';
 
-        // Calcular os totais e criar as linhas da tabela
         hist.forEach((item, index) => {
             totalBruto += item.valor || 0;
             totalLucro += item.lucro || 0;
@@ -962,7 +1033,6 @@
             `;
         });
 
-        // Atualizar o HTML escondido com os dados
         document.getElementById('pdf-tbody').innerHTML = tbodyHtml;
         document.getElementById('pdf-total-bruto').innerText = fmtMoney(totalBruto);
         document.getElementById('pdf-total-custos').innerText = fmtMoney(totalGas + totalManut + totalTerc);
@@ -971,35 +1041,39 @@
         const hoje = new Date();
         document.getElementById('pdf-data-geracao').innerText = `Documento emitido em: ${hoje.toLocaleDateString('pt-BR')} às ${hoje.toLocaleTimeString('pt-BR')}`;
 
-        // Desenhar gráfico no PDF
+        const element = document.getElementById('pdf-container');
+        
+        // Torna o contêiner visível para o html2canvas conseguir ler (sem atrapalhar o scroll do utilizador)
+        element.style.visibility = 'visible';
+
         desenharGraficoPDF(totalLucro, totalGas, totalManut, totalTerc);
 
-        const element = document.getElementById('pdf-container');
-        element.style.display = 'block'; // Mostra temporariamente para capturar (fica fora do ecrã)
-
+        // Otimização crucial no html2canvas: reset do scrollY para evitar capturas fora da tela
         const opt = {
             margin:       [15, 15, 15, 15],
             filename:     'Relatorio_Faturamento_Juarez.pdf',
             image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2, useCORS: true },
+            html2canvas:  { scale: 2, useCORS: true, scrollY: 0, windowWidth: 800 },
             jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
 
-        // Gerar o PDF e voltar a esconder a div
-        html2pdf().set(opt).from(element).save().then(() => {
-            element.style.display = 'none';
-            btn.innerHTML = "📄 Exportar Relatório em PDF";
-            btn.disabled = false;
-            showToast("Relatório PDF guardado com sucesso!");
-        }).catch(err => {
-            alert("Erro ao gerar PDF. Tente novamente.");
-            element.style.display = 'none';
-            btn.innerHTML = "📄 Exportar Relatório em PDF";
-            btn.disabled = false;
-        });
+        // Timeout para dar tempo ao navegador de renderizar o canvas no DOM visível
+        setTimeout(() => {
+            html2pdf().set(opt).from(element).save().then(() => {
+                element.style.visibility = 'hidden';
+                btn.innerHTML = "📄 Exportar Relatório em PDF";
+                btn.disabled = false;
+                showToast("Relatório PDF guardado com sucesso!");
+            }).catch(err => {
+                console.error("Erro no PDF:", err);
+                alert("Erro ao gerar PDF. Tente novamente.");
+                element.style.visibility = 'hidden';
+                btn.innerHTML = "📄 Exportar Relatório em PDF";
+                btn.disabled = false;
+            });
+        }, 150);
     }
 
-    // Função desenhada especificamente para os contrastes visuais do PDF (Fundo branco)
     function desenharGraficoPDF(lucro, gas, manut, terceiro) {
         const canvas = document.getElementById('pdf-chart');
         const ctx = canvas.getContext('2d');
@@ -1019,7 +1093,7 @@
         let startAngle = -0.5 * Math.PI;
         const centerX = canvas.width / 2;
         const centerY = canvas.height / 2;
-        const radius = Math.min(centerX, centerY) - 20; // Espaço para não cortar bordas
+        const radius = Math.min(centerX, centerY) - 20;
 
         data.forEach(slice => {
             if (slice.val <= 0) return;
@@ -1035,14 +1109,12 @@
             startAngle += sliceAngle;
         });
 
-        // Buraco branco no centro (Estilo Doughnut)
         ctx.beginPath();
         ctx.arc(centerX, centerY, radius - 50, 0, 2 * Math.PI);
         ctx.fillStyle = '#ffffff';
         ctx.fill();
         ctx.closePath();
 
-        // Texto Central no Gráfico
         ctx.fillStyle = '#121214';
         ctx.font = 'bold 18px sans-serif';
         ctx.textAlign = 'center';
