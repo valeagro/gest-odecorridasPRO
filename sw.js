@@ -1,6 +1,6 @@
 const CACHE_NAME = 'calc-pro-v1';
 const ASSETS = [
-  './gestão de corridas - PRO3.html',
+  './index.html',
   './manifest.json',
   './icon-192.png',
   './icon-512.png'
