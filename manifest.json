@@ -1,7 +1,7 @@
 {
   "name": "Calculadora PRO - Juarez B. Araujo",
   "short_name": "Calc PRO",
-  "start_url": "./gestão de corridas - PRO3.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#121214",
   "theme_color": "#121214",
