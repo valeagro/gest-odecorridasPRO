@@ -4,15 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#121214">
+    <!-- Meta tags para PWA -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Calculadora PRO - Juarez B. Araujo</title>
 
+    <!-- Adições para PWA: Manifesto e Ícone iOS -->
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon-192.png">
     
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- Bibliotecas para Geração de PDF REAL (Documento nativo, não é print) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
     <style>
         :root {
@@ -45,7 +49,7 @@
             min-height: 100vh;
         }
 
-        /* Splash Screen Styles */
+        /* Splash Screen com Créditos */
         #splash-screen {
             position: fixed;
             top: 0;
@@ -104,6 +108,7 @@
             box-shadow: 0 0 20px rgba(0,0,0,0.8);
         }
 
+        /* Header Fixed */
         header {
             background: rgba(30, 30, 34, 0.95);
             backdrop-filter: blur(10px);
@@ -133,6 +138,7 @@
             color: var(--text-secondary);
         }
 
+        /* Navigation Tabs */
         .tab-nav {
             display: flex;
             background: var(--bg-body);
@@ -158,6 +164,7 @@
             background: var(--bg-card);
         }
 
+        /* Main Content Scrollable */
         main {
             padding: 16px;
             flex: 1;
@@ -227,6 +234,7 @@
             color-scheme: dark;
         }
 
+        /* Action Buttons */
         .btn {
             width: 100%;
             padding: 14px;
@@ -257,10 +265,20 @@
             background-color: #25D366;
             color: #ffffff;
         }
+
+        .btn-whatsapp:active {
+            background-color: #1DA851;
+            transform: scale(0.98);
+        }
         
         .btn-pdf {
             background-color: #3B82F6;
             color: #ffffff;
+        }
+
+        .btn-pdf:active {
+            background-color: #2563EB;
+            transform: scale(0.98);
         }
 
         .btn-secondary {
@@ -269,6 +287,7 @@
             color: var(--text-primary);
         }
 
+        /* Result Panel & Chart */
         .result-card {
             background: var(--bg-input);
             border: 1fr solid var(--border-color);
@@ -296,6 +315,7 @@
             margin: 4px 0;
         }
 
+        /* Financial Breakdown */
         .financial-stats {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -326,6 +346,7 @@
         .stat-item.maint .val { color: #FBBF24; }
         .stat-item.third .val { color: #60A5FA; }
 
+        /* Canvas Chart Container */
         .chart-box {
             position: relative;
             width: 100%;
@@ -336,6 +357,12 @@
             align-items: center;
         }
 
+        canvas {
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        /* Receipt Preview */
         .receipt-preview {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
@@ -369,7 +396,7 @@
 </head>
 <body>
 
-<!-- SPLASH SCREEN COM CRÉDITOS -->
+<!-- SPLASH SCREEN COM CRÉDITOS DO DESENVOLVEDOR -->
 <div id="splash-screen">
     <div>
         <h1 class="logo-text">Calculadora PRO</h1>
@@ -401,7 +428,7 @@
         <div id="tab-calculadora" class="tab-content active">
             <div class="section-title">Dados do Passageiro e Agenda</div>
             <div class="form-group full">
-                <label>WhatsApp do Cliente</label>
+                <label>WhatsApp do Cliente (Apenas números ou com + para internacional)</label>
                 <input type="tel" id="clienteTel" placeholder="Ex: 87999998888 ou +351...">
             </div>
             
@@ -454,8 +481,8 @@
                     <label>Cobrar Retorno Vazio?</label>
                     <select id="retornoVazio">
                         <option value="0">Não (Apenas ida)</option>
-                        <option value="0.5">Sim (+50% KM/Tempo)</option>
-                        <option value="1.0">Sim (Ida e Volta 100%)</option>
+                        <option value="0.5">Sim (Adicionar +50% KM/Tempo)</option>
+                        <option value="1.0">Sim (Cobrar Ida e Volta 100%)</option>
                     </select>
                 </div>
             </div>
@@ -478,12 +505,12 @@
 
             <div class="form-group full" id="boxJustificativa" style="display: none;">
                 <label>Motivo do Dinâmico (Sairá no Orçamento)</label>
-                <input type="text" id="motivoDinamica" placeholder="Ex: Horário de Pico / Chuva Forte">
+                <input type="text" id="motivoDinamica" placeholder="Ex: Horário de Pico / Chuva Forte / Madrugada">
             </div>
 
             <button class="btn btn-primary" onclick="calcularEExibir()">Calcular Preço & Análise</button>
 
-            <!-- CARD DE RESULTADO -->
+            <!-- CARD DE RESULTADO E GRÁFICO -->
             <div class="result-card" id="resultCard">
                 <div class="price-display">
                     <div class="price-label">Valor Sugerido ao Cliente</div>
@@ -511,6 +538,7 @@
                     </div>
                 </div>
 
+                <!-- Gráfico de Pizza Canvas -->
                 <div class="chart-box">
                     <canvas id="lucroChart" width="220" height="180"></canvas>
                 </div>
@@ -519,7 +547,7 @@
                 <div class="receipt-preview" id="receiptText"></div>
 
                 <button class="btn btn-whatsapp" onclick="enviarWhatsApp()">
-                    📲 Enviar no WhatsApp
+                    📲 Enviar no WhatsApp do Cliente
                 </button>
                 <button class="btn btn-secondary" onclick="copiarTexto()">
                     📋 Copiar Apenas Texto
@@ -585,11 +613,17 @@
                 </p>
             </div>
             
-            <button class="btn btn-pdf" id="btnPdf" onclick="gerarRelatorioAvancadoPDF()" style="margin-top: 20px;">
-                📄 Exportar Relatório Analítico (PDF)
-            </button>
+            <div style="background: var(--bg-input); padding: 12px; border-radius: 8px; margin-top: 20px; border: 1px solid var(--border-color);">
+                <div class="section-title" style="margin-top: 0;">Filtro de Relatório PDF</div>
+                <label style="font-size: 0.75rem; margin-bottom: 8px;">Selecione uma data específica (deixe em branco para exportar todo o histórico):</label>
+                <input type="date" id="filtroDataPDF" style="margin-bottom: 10px;">
+                <button class="btn btn-pdf" id="btnPdf" onclick="exportarPDFReal()">
+                    📄 Gerar Relatório Financeiro (PDF)
+                </button>
+            </div>
+
             <button class="btn btn-secondary" onclick="exportarCSV()" style="margin-top: 10px;">
-                📊 Exportar Planilha (CSV)
+                📊 Exportar Simples (CSV)
             </button>
             <button class="btn btn-secondary" onclick="limparHistorico()" style="margin-top: 10px; border-color: #EF4444; color: #EF4444;">
                 🗑️ Limpar Histórico
@@ -601,10 +635,16 @@
 <div class="toast" id="toast">Ação concluída!</div>
 
 <script>
-    // Configurações padrão
+    // Configurações padrão iniciais
     const DEFAULT_CONFIG = {
-        taxaBase: 5.00, valorKm: 2.20, valorMinuto: 0.35, valorEspera: 0.40,
-        precoGasolina: 5.80, kmLiter: 10.0, manutencaoHora: 8.00, taxaTerceiro: 0
+        taxaBase: 5.00,
+        valorKm: 2.20,
+        valorMinuto: 0.35,
+        valorEspera: 0.40,
+        precoGasolina: 5.80,
+        kmLiter: 10.0,
+        manutencaoHora: 8.00,
+        taxaTerceiro: 0
     };
 
     let config = {};
@@ -616,7 +656,9 @@
             const splash = document.getElementById('splash-screen');
             if(splash) {
                 splash.style.opacity = '0';
-                setTimeout(() => { splash.style.display = 'none'; }, 500);
+                setTimeout(() => {
+                    splash.style.display = 'none';
+                }, 500);
             }
         }, 2200);
 
@@ -625,6 +667,7 @@
         const agora = new Date();
         document.getElementById('dataCorrida').value = agora.toISOString().split('T')[0];
         document.getElementById('horaCorrida').value = agora.toTimeString().substring(0, 5);
+        document.getElementById('filtroDataPDF').value = agora.toISOString().split('T')[0];
 
         renderHistorico();
     };
@@ -632,6 +675,7 @@
     function switchTab(tabName) {
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
         event.target.classList.add('active');
         document.getElementById(`tab-${tabName}`).classList.add('active');
     }
@@ -639,6 +683,7 @@
     function carregarConfiguracoes() {
         const saved = localStorage.getItem('juarez_calc_config');
         config = saved ? JSON.parse(saved) : DEFAULT_CONFIG;
+
         document.getElementById('cfgTaxaBase').value = config.taxaBase;
         document.getElementById('cfgValorKm').value = config.valorKm;
         document.getElementById('cfgValorMinuto').value = config.valorMinuto;
@@ -660,16 +705,20 @@
             manutencaoHora: Math.max(0, parseFloat(document.getElementById('cfgManutencaoHora').value) || 0),
             taxaTerceiro: Math.max(0, parseFloat(document.getElementById('cfgTaxaTerceiro').value) || 0)
         };
+
         localStorage.setItem('juarez_calc_config', JSON.stringify(config));
         showToast("Tarifas salvas com sucesso!");
     }
 
     function toggleJustificativa() {
         const dinamica = parseFloat(document.getElementById('dinamica').value) || 1;
-        document.getElementById('boxJustificativa').style.display = dinamica > 1.0 ? 'block' : 'none';
+        const box = document.getElementById('boxJustificativa');
+        box.style.display = dinamica > 1.0 ? 'block' : 'none';
     }
 
-    function fmtMoney(v) { return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
+    function fmtMoney(v) {
+        return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
 
     function calcularEExibir() {
         const distancia = parseFloat(document.getElementById('distancia').value) || 0;
@@ -679,7 +728,7 @@
         const dinamica = parseFloat(document.getElementById('dinamica').value) || 1.0;
         const extras = parseFloat(document.getElementById('extras').value) || 0;
         const desconto = parseFloat(document.getElementById('desconto').value) || 0;
-        const motivoDinamica = document.getElementById('motivoDinamica').value || 'Condições especiais';
+        const motivoDinamica = document.getElementById('motivoDinamica').value || 'Condições especiais do trajeto/horário';
 
         const origem = document.getElementById('origem').value.trim();
         const destino = document.getElementById('destino').value.trim();
@@ -687,7 +736,7 @@
         const horaInput = document.getElementById('horaCorrida').value;
 
         if (distancia <= 0 || tempo <= 0) {
-            alert("Introduza valores válidos para distância e tempo.");
+            alert("Por favor, introduza valores válidos e positivos para a distância e o tempo.");
             return;
         }
 
@@ -703,12 +752,14 @@
         const acrescimoDinamica = valorComDinamica - subtotalBase;
 
         const valorTerceiro = valorComDinamica * (config.taxaTerceiro / 100);
+        
         let precoFinalCliente = valorComDinamica + valorTerceiro + extras - desconto;
         if (precoFinalCliente < 0) precoFinalCliente = 0;
 
         const gastoCombustivel = (kmEfetivo / config.kmLiter) * config.precoGasolina;
         const gastoManutencao = ((tempoEfetivo + tempoEspera) / 60) * config.manutencaoHora;
         const custoTotalOperacional = gastoCombustivel + gastoManutencao + valorTerceiro;
+
         const lucroLiquidoReal = precoFinalCliente - custoTotalOperacional - extras;
 
         document.getElementById('resValorTotal').innerText = fmtMoney(precoFinalCliente);
@@ -725,16 +776,13 @@
         desenharGrafico(lucroLiquidoReal, gastoCombustivel, gastoManutencao, valorTerceiro);
 
         let dataStr = "A combinar";
-        let dataCurta = new Date().toLocaleDateString('pt-BR');
-        let horaCurta = new Date().toLocaleTimeString('pt-BR').substring(0,5);
-
+        let dataFiltroBase = "";
         if (dataInput && horaInput) {
             const p = dataInput.split('-');
             const d = new Date(p[0], p[1] - 1, p[2]);
             const dias = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
             dataStr = `${p[2]}/${p[1]}/${p[0]} às ${horaInput} (${dias[d.getDay()]})`;
-            dataCurta = `${p[2]}/${p[1]}/${p[0]}`;
-            horaCurta = horaInput;
+            dataFiltroBase = `${p[2]}/${p[1]}/${p[0]}`; // Usado para facilitar o filtro de PDF
         }
 
         let r = `===============================\n`;
@@ -742,20 +790,34 @@
         r += `===============================\n`;
         r += `*Motorista:* Juarez B. Araujo\n`;
         r += `📅 *Data/Hora:* ${dataStr}\n\n`;
+
         if (origem || destino) {
             r += `📍 *Trajeto:*\n`;
             if (origem) r += `• Origem: ${origem}\n`;
             if (destino) r += `• Destino: ${destino}\n\n`;
         }
+
         r += `📏 *Estimativa do Percurso:*\n`;
         r += `• Distância: ${distancia} KM\n`;
         r += `• Tempo Estimado: ${tempo} Minutos\n`;
         if (tempoEspera > 0) r += `• Tempo de Espera Incluído: ${tempoEspera} Min\n`;
+        
         r += `\n💰 *Detalhamento do Valor:*\n`;
         r += `• Valor da Corrida: ${fmtMoney(subtotalBase + valorTerceiro)}\n`;
-        if (dinamica > 1.0) r += `• Adicional Dinâmico (${dinamica}x): ${fmtMoney(acrescimoDinamica)}\n  _(Motivo: ${motivoDinamica})_\n`;
-        if (extras > 0) r += `• Pedágio / Custos Extras: ${fmtMoney(extras)}\n`;
-        if (desconto > 0) r += `• Desconto Especial: -${fmtMoney(desconto)}\n`;
+
+        if (dinamica > 1.0) {
+            r += `• Adicional Dinâmico (${dinamica}x): ${fmtMoney(acrescimoDinamica)}\n`;
+            r += `  _(Motivo: ${motivoDinamica})_\n`;
+        }
+
+        if (extras > 0) {
+            r += `• Pedágio / Custos Extras: ${fmtMoney(extras)}\n`;
+        }
+        
+        if (desconto > 0) {
+            r += `• Desconto Especial: -${fmtMoney(desconto)}\n`;
+        }
+
         r += `\n💵 *VALOR TOTAL: ${fmtMoney(precoFinalCliente)}*\n`;
         r += `===============================\n`;
         r += `_Agendamento garantido com pontualidade, conforto e segurança._\n`;
@@ -765,25 +827,21 @@
         document.getElementById('receiptText').innerText = r;
         document.getElementById('resultCard').style.display = 'block';
 
-        // Melhoria no histórico: guardar absolutamente todos os dados para o Relatório Profissional
+        // Melhoria: Adicionado todos os campos necessários para o relatório avançado
         salvarNoHistorico({
             data: dataStr,
-            dataCurta: dataCurta,
-            hora: horaCurta,
+            dataFiltro: dataFiltroBase,
             origem: origem || 'Não especificada',
             destino: destino || 'Não especificado',
             distancia: distancia,
             tempo: tempo,
-            tempoEspera: tempoEspera,
-            dinamica: dinamica,
-            extras: extras,
-            desconto: desconto,
             valor: precoFinalCliente,
             lucro: lucroLiquidoReal,
             combustivel: gastoCombustivel,
             manutencao: gastoManutencao,
             terceiro: valorTerceiro,
-            timestamp: new Date().getTime()
+            extras: extras,
+            desconto: desconto
         });
     }
 
@@ -791,6 +849,7 @@
         const canvas = document.getElementById('lucroChart');
         const ctx = canvas.getContext('2d');
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+
         const lucroVisual = lucro > 0 ? lucro : 0;
         const total = lucroVisual + gas + manut + terceiro;
         if (total <= 0) return;
@@ -810,12 +869,14 @@
         data.forEach(slice => {
             if (slice.val <= 0) return;
             const sliceAngle = (slice.val / total) * 2 * Math.PI;
+
             ctx.beginPath();
             ctx.arc(centerX, centerY, radius, startAngle, startAngle + sliceAngle);
             ctx.arc(centerX, centerY, radius - 28, startAngle + sliceAngle, startAngle, true);
             ctx.closePath();
             ctx.fillStyle = slice.color;
             ctx.fill();
+
             startAngle += sliceAngle;
         });
 
@@ -827,20 +888,27 @@
 
         ctx.fillStyle = lucro > 0 ? '#10B981' : '#EF4444';
         ctx.font = 'bold 13px sans-serif';
-        ctx.fillText(lucro > 0 ? `${Math.round((lucro / total) * 100)}% Lucro` : 'Prejuízo', centerX, centerY + 10);
+        const pctLucro = lucro > 0 ? Math.round((lucro / total) * 100) : 0;
+        ctx.fillText(lucro > 0 ? `${pctLucro}% Lucro` : 'Prejuízo', centerX, centerY + 10);
     }
 
     function enviarWhatsApp() {
         if (!textoReciboAtual) return;
-        let telLimpo = document.getElementById('clienteTel').value.replace(/\D/g, '');
-        if (telLimpo.length >= 10 && telLimpo.length <= 11) telLimpo = '55' + telLimpo;
+        let telRaw = document.getElementById('clienteTel').value.trim();
+        let telLimpo = telRaw.replace(/\D/g, '');
+        if (telLimpo.length >= 10 && telLimpo.length <= 11 && !telRaw.startsWith('+')) {
+            telLimpo = '55' + telLimpo;
+        }
         const encoded = encodeURIComponent(textoReciboAtual);
-        window.open(telLimpo ? `https://wa.me/${telLimpo}?text=${encoded}` : `https://api.whatsapp.com/send?text=${encoded}`, '_blank');
+        const url = telLimpo ? `https://wa.me/${telLimpo}?text=${encoded}` : `https://api.whatsapp.com/send?text=${encoded}`;
+        window.open(url, '_blank');
     }
 
     function copiarTexto() {
         if (!textoReciboAtual) return;
-        navigator.clipboard.writeText(textoReciboAtual).then(() => showToast("Copiado!"));
+        navigator.clipboard.writeText(textoReciboAtual).then(() => {
+            showToast("Orçamento copiado para a área de transferência!");
+        });
     }
 
     function showToast(msg) {
@@ -853,7 +921,7 @@
     function salvarNoHistorico(corrida) {
         let hist = JSON.parse(localStorage.getItem('juarez_calc_hist') || '[]');
         hist.unshift(corrida);
-        if (hist.length > 500) hist.pop(); // Armazena até 500 viagens agora para o relatório detalhado
+        if (hist.length > 500) hist.pop(); // Aumentado limite para não perder dados diários rapidamente
         localStorage.setItem('juarez_calc_hist', JSON.stringify(hist));
         renderHistorico();
     }
@@ -861,13 +929,16 @@
     function renderHistorico() {
         let hist = JSON.parse(localStorage.getItem('juarez_calc_hist') || '[]');
         const container = document.getElementById('historicoLista');
+
         if (hist.length === 0) {
             container.innerHTML = `<p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem; margin-top: 20px;">Nenhuma corrida recente.</p>`;
             return;
         }
 
         let html = '';
-        hist.slice(0, 10).forEach(item => {
+        const histVisual = hist.slice(0, 10);
+        
+        histVisual.forEach(item => {
             html += `
                 <div style="background: var(--bg-input); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; margin-bottom: 8px;">
                     <div style="display: flex; justify-content: space-between; font-weight: bold; color: var(--accent-gold);">
@@ -881,187 +952,169 @@
                 </div>
             `;
         });
-        if (hist.length > 10) html += `<p style="text-align: center; font-size: 0.75rem; color: var(--text-secondary);">+ ${hist.length - 10} viagens ocultas. Gere o PDF para analisar todas.</p>`;
+        
+        if (hist.length > 10) {
+            html += `<p style="text-align: center; font-size: 0.75rem; color: var(--text-secondary);">+ ${hist.length - 10} viagens no sistema. Exporte o relatório para ver todas.</p>`;
+        }
+        
         container.innerHTML = html;
     }
 
-    // =================================================================================
-    // NOVO GERADOR DE RELATÓRIO PDF ANALÍTICO (DOCUMENTO ESTRUTURADO, NÃO "PRINT")
-    // =================================================================================
-    function gerarRelatorioAvancadoPDF() {
+    // -----------------------------------------------------------
+    // NOVA GERAÇÃO DE PDF NATIVO COM JSPDF (DOCUMENTO REAL, NÃO PRINT)
+    // -----------------------------------------------------------
+    function exportarPDFReal() {
         let hist = JSON.parse(localStorage.getItem('juarez_calc_hist') || '[]');
+        const filtroDataInput = document.getElementById('filtroDataPDF').value;
+
+        // Se o motorista escolheu uma data, formatamos para comparar com o histórico
+        let dataStrFiltro = "";
+        if (filtroDataInput) {
+            const p = filtroDataInput.split('-'); // YYYY-MM-DD
+            dataStrFiltro = `${p[2]}/${p[1]}/${p[0]}`; // DD/MM/YYYY
+            hist = hist.filter(item => item.dataFiltro === dataStrFiltro || (item.data && item.data.includes(dataStrFiltro)));
+        }
+
         if (hist.length === 0) {
-            showToast("Não há dados para gerar relatório.");
+            showToast("Nenhuma corrida encontrada para o período selecionado.");
             return;
         }
 
         const btn = document.getElementById('btnPdf');
-        btn.innerText = "⏳ A processar Relatório Completo...";
+        btn.innerText = "⏳ Gerando Documento...";
         btn.disabled = true;
 
-        // 1. Agrupar corridas por Data Curta (Filtro Diário)
-        const gruposDiarios = {};
-        hist.forEach(item => {
-            const dataChave = item.dataCurta || 'Data Desconhecida';
-            if (!gruposDiarios[dataChave]) gruposDiarios[dataChave] = [];
-            gruposDiarios[dataChave].push(item);
+        // Inicializa o jsPDF
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('p', 'mm', 'a4'); // Retrato, Milímetros, Folha A4
+
+        let totalBruto = 0, totalLucro = 0, totalGas = 0, totalManut = 0, totalTerc = 0;
+
+        // Prepara os dados para a tabela detalhada
+        const tableBody = hist.map(item => {
+            totalBruto += item.valor || 0;
+            totalLucro += item.lucro || 0;
+            totalGas += item.combustivel || 0;
+            totalManut += item.manutencao || 0;
+            totalTerc += item.terceiro || 0;
+
+            const trajeto = `${item.origem}\n➔ ${item.destino}`;
+            const distTempo = `${item.distancia} km\n${item.tempo} min`;
+            
+            // Quebra detalhada de gastos por viagem para o motorista saber para onde foi o dinheiro
+            let custosDetalhados = `Gas: ${fmtMoney(item.combustivel || 0)}\nMan: ${fmtMoney(item.manutencao || 0)}\nTaxa: ${fmtMoney(item.terceiro || 0)}`;
+            if (item.extras && item.extras > 0) custosDetalhados += `\nExtras: ${fmtMoney(item.extras)}`;
+            if (item.desconto && item.desconto > 0) custosDetalhados += `\nDesc: -${fmtMoney(item.desconto)}`;
+
+            const dataCurta = item.data.split(' às ')[0];
+
+            return [
+                dataCurta,
+                trajeto,
+                distTempo,
+                custosDetalhados,
+                fmtMoney(item.valor || 0),
+                fmtMoney(item.lucro || 0)
+            ];
         });
 
-        // 2. Construir um Documento HTML Real Temporário e Perfeito
-        const reportDiv = document.createElement('div');
-        reportDiv.style.width = '800px'; 
-        reportDiv.style.padding = '40px';
-        reportDiv.style.background = '#ffffff';
-        reportDiv.style.color = '#121214';
-        reportDiv.style.fontFamily = 'Helvetica, Arial, sans-serif';
-        
-        let globalBruto = 0, globalGas = 0, globalManut = 0, globalTerc = 0, globalLucro = 0;
+        // ================= HEADER DO DOCUMENTO =================
+        doc.setFontSize(18);
+        doc.setTextColor(245, 158, 11); // Laranja/Ouro
+        doc.text("Relatório de Gestão Financeira - Corridas PRO", 14, 20);
 
-        let htmlContent = `
-            <div style="text-align: center; margin-bottom: 30px;">
-                <h1 style="color: #F59E0B; margin-bottom: 5px; font-size: 28px;">Relatório Financeiro e Operacional</h1>
-                <p style="color: #666; font-size: 14px; margin-top: 0;">Calculadora PRO - Juarez B. Araujo</p>
-                <p style="color: #999; font-size: 12px;">Documento gerado em: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}</p>
-            </div>
-        `;
+        doc.setFontSize(10);
+        doc.setTextColor(100, 100, 100);
+        const periodoStr = dataStrFiltro ? `Data Filtrada: ${dataStrFiltro}` : "Período: Todo o Histórico Salvo";
+        doc.text(`${periodoStr} | Gerado em: ${new Date().toLocaleString('pt-BR')}`, 14, 26);
 
-        // 3. Iterar por cada dia e criar a quebra detalhada
-        for (const [dataChave, corridas] of Object.entries(gruposDiarios)) {
-            let diaBruto = 0, diaGas = 0, diaManut = 0, diaTerc = 0, diaLucro = 0;
+        // ================= BLOCO DE RESUMO FINANCEIRO =================
+        doc.setFillColor(245, 245, 245);
+        doc.rect(14, 32, 182, 25, 'F');
 
-            let tbodyViagens = '';
-            corridas.forEach(item => {
-                // Prevenção contra falhas em viagens antigas (versões anteriores que não tinham os novos dados)
-                const vBase = item.valor || 0; const vLucro = item.lucro || 0;
-                const cGas = item.combustivel || 0; const cMan = item.manutencao || 0; const cTer = item.terceiro || 0;
-                const pDist = item.distancia || 0; const pTemp = item.tempo || 0; 
-                const pDin = item.dinamica || 1.0; const pEsp = item.tempoEspera || 0;
-                const pExt = item.extras || 0; const pDesc = item.desconto || 0;
-                
-                diaBruto += vBase; diaGas += cGas; diaManut += cMan; diaTerc += cTer; diaLucro += vLucro;
-                globalBruto += vBase; globalGas += cGas; globalManut += cMan; globalTerc += cTer; globalLucro += vLucro;
+        doc.setFontSize(11);
+        doc.setTextColor(50, 50, 50);
+        doc.text("Faturamento Bruto", 20, 42);
+        doc.setFontSize(14);
+        doc.setTextColor(18, 18, 20);
+        doc.setFont("helvetica", "bold");
+        doc.text(fmtMoney(totalBruto), 20, 50);
 
-                // Linha de detalhe extremo para cada viagem
-                tbodyViagens += `
-                    <tr style="border-bottom: 1px solid #e5e7eb; font-size: 11px;">
-                        <td style="padding: 8px;">${item.hora || '--:--'}</td>
-                        <td style="padding: 8px; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                            <strong>${item.origem}</strong><br><span style="color:#6b7280;">➔ ${item.destino}</span>
-                        </td>
-                        <td style="padding: 8px; text-align: center;">${pDist}km<br>${pTemp}m</td>
-                        <td style="padding: 8px; text-align: center; color: #6b7280;">
-                            ${pDin > 1 ? `<span style="color:#F59E0B">Din x${pDin}</span><br>` : ''}
-                            ${pEsp > 0 ? `Esp: ${pEsp}m<br>` : ''}
-                            ${pExt > 0 ? `Ext: ${fmtMoney(pExt)}` : ''}
-                        </td>
-                        <td style="padding: 8px; text-align: right; color: #EF4444;">
-                            Gas: ${fmtMoney(cGas)}<br>Man: ${fmtMoney(cMan)}
-                        </td>
-                        <td style="padding: 8px; text-align: right; color: #10B981; font-weight: bold;">${fmtMoney(vLucro)}</td>
-                        <td style="padding: 8px; text-align: right; font-weight: bold; background: #f9fafb;">${fmtMoney(vBase)}</td>
-                    </tr>
-                `;
-            });
+        doc.setFontSize(11);
+        doc.setTextColor(50, 50, 50);
+        doc.setFont("helvetica", "normal");
+        doc.text("Custos Operacionais", 85, 42);
+        doc.setFontSize(14);
+        doc.setTextColor(239, 68, 68); // Vermelho
+        doc.setFont("helvetica", "bold");
+        doc.text(fmtMoney(totalGas + totalManut + totalTerc), 85, 50);
 
-            // Adiciona a secção do dia com quebra de página automática caso necessite
-            htmlContent += `
-                <div style="page-break-inside: avoid; margin-bottom: 40px; border: 1px solid #e5e7eb; border-radius: 8px; padding: 15px;">
-                    <h2 style="font-size: 18px; color: #111827; border-bottom: 2px solid #F59E0B; padding-bottom: 5px; margin-top: 0;">
-                        Resumo do Dia: ${dataChave}
-                    </h2>
-                    
-                    <div style="display: flex; justify-content: space-between; margin: 15px 0; background: #f3f4f6; padding: 10px; border-radius: 6px;">
-                        <div style="text-align: center;"><span style="font-size: 10px; color: #4b5563;">Bruto Dia</span><br><strong style="font-size: 14px;">${fmtMoney(diaBruto)}</strong></div>
-                        <div style="text-align: center;"><span style="font-size: 10px; color: #4b5563;">Custos (-G, -M, -T)</span><br><strong style="font-size: 14px; color: #EF4444;">${fmtMoney(diaGas+diaManut+diaTerc)}</strong></div>
-                        <div style="text-align: center;"><span style="font-size: 10px; color: #4b5563;">Lucro Real</span><br><strong style="font-size: 14px; color: #10B981;">${fmtMoney(diaLucro)}</strong></div>
-                    </div>
+        doc.setFontSize(11);
+        doc.setTextColor(50, 50, 50);
+        doc.setFont("helvetica", "normal");
+        doc.text("Lucro Líquido Real", 150, 42);
+        doc.setFontSize(14);
+        doc.setTextColor(16, 185, 129); // Verde
+        doc.setFont("helvetica", "bold");
+        doc.text(fmtMoney(totalLucro), 150, 50);
 
-                    <table style="width: 100%; border-collapse: collapse; text-align: left;">
-                        <thead>
-                            <tr style="background: #111827; color: #ffffff; font-size: 12px;">
-                                <th style="padding: 8px;">Hora</th>
-                                <th style="padding: 8px;">Trajeto</th>
-                                <th style="padding: 8px; text-align: center;">Base</th>
-                                <th style="padding: 8px; text-align: center;">Variáveis</th>
-                                <th style="padding: 8px; text-align: right;">Custo Fixo</th>
-                                <th style="padding: 8px; text-align: right;">Lucro Líq.</th>
-                                <th style="padding: 8px; text-align: right;">Valor Final</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${tbodyViagens}
-                        </tbody>
-                    </table>
-                </div>
-            `;
-        }
+        // ================= TABELA DE CORRIDAS (Multi-páginas automático) =================
+        doc.autoTable({
+            startY: 65,
+            head: [['Data', 'Trajeto (Origem -> Destino)', 'Dist/Tempo', 'Detalhamento Custos', 'Total Recebido', 'Lucro Real']],
+            body: tableBody,
+            theme: 'grid',
+            headStyles: { fillColor: [18, 18, 20], textColor: [255, 255, 255], fontStyle: 'bold' },
+            styles: { fontSize: 8, cellPadding: 3, valign: 'middle' },
+            columnStyles: {
+                0: { cellWidth: 20 },
+                1: { cellWidth: 50 },
+                2: { cellWidth: 20, halign: 'center' },
+                3: { cellWidth: 35 },
+                4: { cellWidth: 28, halign: 'right', fontStyle: 'bold' },
+                5: { cellWidth: 25, halign: 'right', fontStyle: 'bold', textColor: [16, 185, 129] }
+            },
+            alternateRowStyles: { fillColor: [250, 250, 250] },
+            margin: { top: 15, left: 14, right: 14 }
+        });
 
-        // Tabela Global (Colocada no início do PDF)
-        const summaryBlock = `
-            <div style="display: flex; justify-content: space-around; background: #121214; color: #fff; padding: 20px; border-radius: 10px; margin-bottom: 30px;">
-                <div style="text-align: center;">
-                    <span style="font-size: 12px; color: #9ca3af; text-transform: uppercase;">Total Faturado</span>
-                    <div style="font-size: 24px; font-weight: bold; color: #ffffff; margin-top: 5px;">${fmtMoney(globalBruto)}</div>
-                </div>
-                <div style="text-align: center;">
-                    <span style="font-size: 12px; color: #9ca3af; text-transform: uppercase;">Total Despesas</span>
-                    <div style="font-size: 24px; font-weight: bold; color: #EF4444; margin-top: 5px;">${fmtMoney(globalGas + globalManut + globalTerc)}</div>
-                </div>
-                <div style="text-align: center;">
-                    <span style="font-size: 12px; color: #9ca3af; text-transform: uppercase;">Lucro Líquido Real</span>
-                    <div style="font-size: 24px; font-weight: bold; color: #10B981; margin-top: 5px;">${fmtMoney(globalLucro)}</div>
-                </div>
-            </div>
-        `;
+        // Salvar Arquivo PDF
+        const nomeArquivo = `Relatorio_Corridas_${dataStrFiltro ? dataStrFiltro.replace(/\//g, '-') : 'Completo'}.pdf`;
+        doc.save(nomeArquivo);
 
-        reportDiv.innerHTML = htmlContent.replace('</div>', '</div>' + summaryBlock); // Inserir o sumário logo abaixo do título
-
-        // 4. Inserir no DOM escondido (sem afetar a vista), processar e remover
-        reportDiv.style.position = 'absolute';
-        reportDiv.style.left = '-9999px';
-        document.body.appendChild(reportDiv);
-
-        const opt = {
-            margin:       10,
-            filename:     'Relatorio_Detalhado_Juarez.pdf',
-            image:        { type: 'jpeg', quality: 1.0 },
-            html2canvas:  { scale: 2, useCORS: true, windowWidth: 800, letterRendering: true },
-            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
-
-        setTimeout(() => {
-            html2pdf().set(opt).from(reportDiv).save().then(() => {
-                document.body.removeChild(reportDiv);
-                btn.innerHTML = "📄 Exportar Relatório Analítico (PDF)";
-                btn.disabled = false;
-                showToast("Relatório baixado com sucesso!");
-            }).catch(err => {
-                document.body.removeChild(reportDiv);
-                btn.innerHTML = "📄 Exportar Relatório Analítico (PDF)";
-                btn.disabled = false;
-                alert("Erro ao processar o relatório.");
-            });
-        }, 150);
+        btn.innerHTML = "📄 Gerar Relatório Financeiro (PDF)";
+        btn.disabled = false;
+        showToast("Relatório baixado com sucesso!");
     }
 
     function exportarCSV() {
         let hist = JSON.parse(localStorage.getItem('juarez_calc_hist') || '[]');
-        if (hist.length === 0) return showToast("Sem dados para exportar.");
+        if (hist.length === 0) {
+            showToast("Não há dados para exportar.");
+            return;
+        }
         
-        let csv = "\uFEFFData;Hora;Origem;Destino;Distancia;Tempo;Espera;Dinamica;Extras;Desconto;Custos;Lucro Liquido;Valor Final\n";
+        let csv = "\uFEFFData;Origem;Destino;Distancia;Tempo;Custo Combustível;Custo Manutenção;Taxa App;Lucro Liquido;Valor Final\n";
         hist.forEach(item => {
-            const dist = item.distancia || 0; const temp = item.tempo || 0;
-            const esp = item.tempoEspera || 0; const din = item.dinamica || 1;
-            const ext = item.extras || 0; const desc = item.desconto || 0;
-            const custos = (item.combustivel || 0) + (item.manutencao || 0) + (item.terceiro || 0);
-
-            csv += `"${item.dataCurta || ''}";"${item.hora || ''}";"${item.origem}";"${item.destino}";"${dist}";"${temp}";"${esp}";"${din}";"${ext.toFixed(2)}";"${desc.toFixed(2)}";"${custos.toFixed(2).replace('.', ',')}";"${(item.lucro||0).toFixed(2).replace('.', ',')}";"${(item.valor||0).toFixed(2).replace('.', ',')}"\n`;
+            const dist = item.distancia || 0;
+            const temp = item.tempo || 0;
+            
+            const gasFmt = (item.combustivel || 0).toFixed(2).replace('.', ',');
+            const manFmt = (item.manutencao || 0).toFixed(2).replace('.', ',');
+            const tercFmt = (item.terceiro || 0).toFixed(2).replace('.', ',');
+            const valorFmt = (item.valor || 0).toFixed(2).replace('.', ',');
+            const lucroFmt = (item.lucro || 0).toFixed(2).replace('.', ',');
+            
+            csv += `"${item.data}";"${item.origem}";"${item.destino}";"${dist}";"${temp}";"${gasFmt}";"${manFmt}";"${tercFmt}";"${lucroFmt}";"${valorFmt}"\n`;
         });
 
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = "historico_completo.csv";
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", "historico_corridas.csv");
+        link.style.visibility = 'hidden';
+        
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -1080,45 +1133,61 @@
         const destino = document.getElementById('destino').value.trim();
         const btn = document.getElementById('btnRota');
 
-        if (!origem || !destino) return alert("Preencha a Origem e Destino primeiro.");
+        if (!origem || !destino) {
+            alert("Por favor, preencha os campos Origem e Destino primeiro.");
+            return;
+        }
 
-        btn.innerText = "⏳ A calcular...";
+        btn.innerText = "⏳ A calcular rota...";
+        btn.style.opacity = "0.6";
         btn.disabled = true;
 
         try {
             const resOrigem = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(origem)}`);
             const dataOrigem = await resOrigem.json();
-            if (dataOrigem.length === 0) throw new Error("Origem não encontrada.");
+            if (dataOrigem.length === 0) throw new Error("Morada de origem não encontrada.");
+            const coordOrigem = { lat: dataOrigem[0].lat, lon: dataOrigem[0].lon };
 
             const resDestino = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(destino)}`);
             const dataDestino = await resDestino.json();
-            if (dataDestino.length === 0) throw new Error("Destino não encontrado.");
+            if (dataDestino.length === 0) throw new Error("Morada de destino não encontrada.");
+            const coordDestino = { lat: dataDestino[0].lat, lon: dataDestino[0].lon };
 
-            const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${dataOrigem[0].lon},${dataOrigem[0].lat};${dataDestino[0].lon},${dataDestino[0].lat}?overview=false`;
+            const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${coordOrigem.lon},${coordOrigem.lat};${coordDestino.lon},${coordDestino.lat}?overview=false`;
             const resRota = await fetch(osrmUrl);
             const dataRota = await resRota.json();
 
-            if (dataRota.code !== "Ok") throw new Error("Não foi possível traçar rota.");
+            if (dataRota.code !== "Ok") throw new Error("Não foi possível traçar um percurso rodoviário entre estes pontos.");
 
-            document.getElementById('distancia').value = (dataRota.routes[0].distance / 1000).toFixed(1);
-            document.getElementById('tempo').value = Math.ceil(dataRota.routes[0].duration / 60);
-            showToast("Calculado com sucesso!");
+            const distanciaKm = (dataRota.routes[0].distance / 1000).toFixed(1);
+            const tempoMinutos = Math.ceil(dataRota.routes[0].duration / 60);
+
+            document.getElementById('distancia').value = distanciaKm;
+            document.getElementById('tempo').value = tempoMinutos;
+            
+            showToast("Distância e tempo preenchidos!");
 
         } catch (erro) {
-            alert("Erro: " + erro.message);
+            alert("Erro: " + erro.message + "\n\nDica: Se a busca falhar, tente ser mais específico (Ex: 'Aeroporto, São Paulo').");
         } finally {
             btn.innerText = "📍 Calcular Distância e Tempo Automaticamente";
+            btn.style.opacity = "1";
             btn.disabled = false;
         }
     }
 </script>
 
+<!-- Registro do Service Worker para o PWA -->
 <script>
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('sw.js')
-            .then(() => console.log('PWA Ready'))
-            .catch(err => console.log('PWA Error:', err));
+            .then(registration => {
+                console.log('PWA: Service Worker registrado com sucesso.');
+            })
+            .catch(error => {
+                console.log('PWA: Falha ao registrar o Service Worker:', error);
+            });
         });
     }
 </script>
