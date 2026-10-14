@@ -334,14 +334,15 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
         };
     }
 
-    async function gravarCorridaSupabase() {
+   async function gravarCorridaSupabase() {
         if (!ultimaCorridaCalculada) return;
 
         const btn = event.target;
         btn.innerText = "A guardar...";
 
+        // CORREÇÃO: 'Corridas' com C maiúsculo
         const { data, error } = await supabaseClient
-            .from('corridas')
+            .from('Corridas') 
             .insert([ultimaCorridaCalculada]);
 
         if (error) {
@@ -357,8 +358,9 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
         const container = document.getElementById('historicoLista');
         container.innerHTML = '<p style="text-align: center;">A carregar da nuvem...</p>';
 
+        // CORREÇÃO: 'Corridas' com C maiúsculo
         const { data: corridas, error } = await supabaseClient
-            .from('corridas')
+            .from('Corridas') 
             .select('*')
             .order('data_hora', { ascending: false })
             .limit(20);
