@@ -206,9 +206,10 @@
     const SUPABASE_URL = 'COLE_AQUI_A_SUA_PROJECT_URL';
     const SUPABASE_ANON_KEY = 'COLE_AQUI_A_SUA_API_KEY';
     
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // CORREÇÃO: O nome foi alterado para supabaseClient para não dar conflito com a biblioteca
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     let utilizadorAtual = null;
-    let ultimaCorridaCalculada = null; // Armazena temporariamente os dados para guardar
+    let ultimaCorridaCalculada = null; 
 
     // ==========================================
     // 2. AUTENTICAÇÃO E SESSÃO
@@ -216,8 +217,7 @@
     window.onload = async function() {
         carregarConfiguracoes();
         
-        // Verifica se o utilizador já tem sessão iniciada
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session } } = await supabaseClient.auth.getSession();
         
         if (session) {
             utilizadorAtual = session.user;
@@ -226,8 +226,7 @@
             document.getElementById('auth-container').style.display = 'flex';
         }
 
-        // Listener de alterações de estado de autenticação
-        supabase.auth.onAuthStateChange((event, session) => {
+        supabaseClient.auth.onAuthStateChange((event, session) => {
             if (event === 'SIGNED_IN') {
                 utilizadorAtual = session.user;
                 mostrarAplicacao();
@@ -244,7 +243,7 @@
         const password = document.getElementById('authSenha').value;
         
         alternarCarregamentoAuth(true);
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
         alternarCarregamentoAuth(false);
 
         if (error) alert("Erro de acesso: " + error.message);
@@ -255,25 +254,25 @@
         const password = document.getElementById('authSenha').value;
         
         alternarCarregamentoAuth(true);
-        const { data, error } = await supabase.auth.signUp({ email, password });
+        const { data, error } = await supabaseClient.auth.signUp({ email, password });
         alternarCarregamentoAuth(false);
 
         if (error) {
             alert("Erro ao criar conta: " + error.message);
         } else {
-            alert("Conta criada com sucesso! A iniciar sessão...");
+            alert("Conta criada com sucesso! Pode entrar.");
         }
     }
 
     async function fazerLogout() {
-        await supabase.auth.signOut();
+        await supabaseClient.auth.signOut();
     }
 
     function mostrarAplicacao() {
         document.getElementById('auth-container').style.display = 'none';
         document.getElementById('main-app').style.display = 'flex';
         document.getElementById('userEmailDisplay').innerText = utilizadorAtual.email;
-        carregarHistoricoSupabase(); // Carrega os dados da base de dados assim que entra
+        carregarHistoricoSupabase();
     }
 
     function alternarCarregamentoAuth(estado) {
@@ -326,7 +325,6 @@
         document.getElementById('resValorTotal').innerText = total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
         document.getElementById('resultCard').style.display = 'block';
 
-        // Prepara os dados para inserir na Base de Dados depois
         ultimaCorridaCalculada = {
             motorista_id: utilizadorAtual.id,
             origem: origem,
@@ -337,14 +335,13 @@
         };
     }
 
-    // --- NOVA FUNÇÃO: Inserir na tabela 'corridas' do Supabase ---
     async function gravarCorridaSupabase() {
         if (!ultimaCorridaCalculada) return;
 
         const btn = event.target;
         btn.innerText = "A guardar...";
 
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
             .from('corridas')
             .insert([ultimaCorridaCalculada]);
 
@@ -357,13 +354,11 @@
         btn.innerText = "💾 Guardar Corrida no Sistema";
     }
 
-    // --- NOVA FUNÇÃO: Buscar da tabela 'corridas' do Supabase ---
     async function carregarHistoricoSupabase() {
         const container = document.getElementById('historicoLista');
         container.innerHTML = '<p style="text-align: center;">A carregar da nuvem...</p>';
 
-        // O RLS garante que o utilizador só verá os seus próprios registos
-        const { data: corridas, error } = await supabase
+        const { data: corridas, error } = await supabaseClient
             .from('corridas')
             .select('*')
             .order('data_hora', { ascending: false })
