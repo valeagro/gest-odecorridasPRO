@@ -10,7 +10,7 @@
     <title>Calculadora PRO - Gestão de Corridas</title>
 
     <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="icon-192.jpg">
+    <link rel="apple-touch-icon" href="icon-192.png">
     
     <!-- Bibliotecas para Geração de PDF REAL -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -342,6 +342,22 @@
     </div>
 </div>
 
+<!-- TELA DE ASSINATURA EXPIRADA (BLOQUEIO SaaS) -->
+<div id="paywall-container" class="app-container" style="justify-content: center; display: none; padding: 24px; text-align: center;">
+    <div style="background: var(--bg-input); border: 1px solid var(--red-alert); border-radius: 12px; padding: 24px;">
+        <h2 style="color: var(--red-alert); margin-top: 0;">⚠️ Assinatura Expirada</h2>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4;">
+            O acesso ao seu painel PRO está temporariamente suspenso por vencimento da assinatura mensal.
+        </p>
+        <div style="background: var(--bg-card); padding: 12px; border-radius: 8px; margin: 16px 0; border: 1px solid var(--border-color); font-size: 0.85rem;">
+            <strong>Chave PIX (Renovação):</strong><br>
+            <span style="color: var(--accent-gold); font-family: monospace;">suporte@calculadorapro.com</span>
+        </div>
+        <p style="font-size: 0.75rem; color: var(--text-secondary);">Após o pagamento, envie o comprovante para liberar o acesso instantaneamente.</p>
+        <button class="btn btn-secondary" onclick="fazerLogout()" style="margin-top: 20px;">Sair / Entrar com Outra Conta</button>
+    </div>
+</div>
+
 <!-- APLICAÇÃO PRINCIPAL -->
 <div id="main-app" class="app-container" style="display: none;">
     <header>
@@ -524,7 +540,7 @@
             </div>
         </div>
 
-        <!-- ABA 2: CARTEIRA DE CLIENTES (NOVO MÓDULO) -->
+        <!-- ABA 2: CARTEIRA DE CLIENTES -->
         <div id="tab-clientes" class="tab-content">
             <div class="section-title">Cadastrar Novo Cliente</div>
             <div style="background: var(--bg-input); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 18px;">
@@ -603,7 +619,7 @@
 
         <!-- ABA 4: PERFIL E TARIFAS -->
         <div id="tab-tarifas" class="tab-content">
-            <div class="section-title">Meus Dados Profissionais (Saem no Orçamento)</div>
+            <div class="section-title">Meus Dados Profissionais</div>
             <div class="form-group full">
                 <label>Seu Nome Profissional</label>
                 <input type="text" id="cfgNomeMotorista" placeholder="Ex: Juarez B. Araujo">
@@ -611,6 +627,10 @@
             <div class="form-group full">
                 <label>Seu Telefone / WhatsApp</label>
                 <input type="tel" id="cfgTelefoneMotorista" placeholder="Ex: 87999998888">
+            </div>
+            <div class="form-group full">
+                <label>Cidade / Região Padrão (Ajusta o GPS)</label>
+                <input type="text" id="cfgCidadePadrao" placeholder="Ex: Juazeiro e Petrolina">
             </div>
 
             <div class="section-title">Base de Preço da Corrida</div>
@@ -687,7 +707,7 @@
     };
 
     let utilizadorAtual = null;
-    let perfilMotorista = { nome: "Motorista Particular", telefone: "" };
+    let perfilMotorista = { nome: "Motorista Particular", telefone: "", cidadePadrao: "Juazeiro e Petrolina" };
     let config = { ...DEFAULT_CONFIG };
     let ultimaCorridaNuvem = null;
     let corridasCacheNuvem = [];
@@ -706,10 +726,11 @@
         supabaseClient.auth.onAuthStateChange((event, session) => {
             if (session && session.user) {
                 utilizadorAtual = session.user;
-                mostrarAplicacao();
+                verificarAssinaturaEMostrarApp();
             } else if (event === 'SIGNED_OUT') {
                 utilizadorAtual = null;
                 document.getElementById('main-app').style.display = 'none';
+                document.getElementById('paywall-container').style.display = 'none';
                 document.getElementById('auth-container').style.display = 'flex';
             }
         });
@@ -718,7 +739,7 @@
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (session && session.user) {
                 utilizadorAtual = session.user;
-                mostrarAplicacao();
+                verificarAssinaturaEMostrarApp();
             } else {
                 document.getElementById('auth-container').style.display = 'flex';
             }
@@ -727,6 +748,33 @@
             document.getElementById('auth-container').style.display = 'flex';
         }
     };
+
+    async function verificarAssinaturaEMostrarApp() {
+        try {
+            const { data, error } = await supabaseClient
+                .from('Motoristas')
+                .select('assinatura_ativa, data_vencimento')
+                .eq('id', utilizadorAtual.id)
+                .maybeSingle();
+
+            if (!error && data) {
+                const ativo = data.assinatura_ativa !== false;
+                const hoje = new Date().toISOString().split('T')[0];
+                const vencido = data.data_vencimento && data.data_vencimento < hoje;
+
+                if (!ativo || vencido) {
+                    document.getElementById('auth-container').style.display = 'none';
+                    document.getElementById('main-app').style.display = 'none';
+                    document.getElementById('paywall-container').style.display = 'flex';
+                    return;
+                }
+            }
+        } catch (e) {
+            console.error("Erro ao validar assinatura:", e);
+        }
+
+        mostrarAplicacao();
+    }
 
     async function realizarLogin() {
         const email = document.getElementById('authEmail').value.trim();
@@ -739,7 +787,7 @@
             if (error) alert("Erro de acesso: " + error.message);
             else if (data && data.user) {
                 utilizadorAtual = data.user;
-                mostrarAplicacao();
+                verificarAssinaturaEMostrarApp();
             }
         } catch (err) {
             alert("Falha na comunicação: " + err.message);
@@ -761,7 +809,7 @@
                 alert("Conta criada com sucesso!");
                 if (data && data.user) {
                     utilizadorAtual = data.user;
-                    mostrarAplicacao();
+                    verificarAssinaturaEMostrarApp();
                 }
             }
         } catch (err) {
@@ -777,6 +825,7 @@
 
     async function mostrarAplicacao() {
         document.getElementById('auth-container').style.display = 'none';
+        document.getElementById('paywall-container').style.display = 'none';
         document.getElementById('main-app').style.display = 'flex';
         document.getElementById('userEmailDisplay').innerText = utilizadorAtual.email;
         
@@ -824,14 +873,12 @@
 
         clientesCacheNuvem = clientes || [];
 
-        // Atualiza o seletor rápido na Calculadora
         let optionsHtml = '<option value="">-- Passageiro Avulso / Digitar Manualmente --</option>';
         clientesCacheNuvem.forEach(c => {
             optionsHtml += `<option value="${c.id}">${c.nome} ${c.telefone ? '(' + c.telefone + ')' : ''}</option>`;
         });
         selectRapido.innerHTML = optionsHtml;
 
-        // Renderiza a lista na aba Clientes
         if (clientesCacheNuvem.length === 0) {
             container.innerHTML = `<p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem;">Nenhum cliente cadastrado ainda.</p>`;
             return;
@@ -862,10 +909,7 @@
         const telefone = document.getElementById('novoClienteTel').value.trim();
         const endereco = document.getElementById('novoClienteEnd').value.trim();
 
-        if (!nome) {
-            alert("Informe pelo menos o nome do cliente.");
-            return;
-        }
+        if (!nome) { alert("Informe pelo menos o nome do cliente."); return; }
 
         const btn = document.getElementById('btnSalvarCliente');
         btn.innerText = "⏳ Salvando...";
@@ -883,9 +927,8 @@
         btn.innerText = "➕ Salvar Cliente na Carteira";
         btn.disabled = false;
 
-        if (error) {
-            alert("Erro ao salvar cliente: " + error.message);
-        } else {
+        if (error) alert("Erro ao salvar cliente: " + error.message);
+        else {
             document.getElementById('novoClienteNome').value = "";
             document.getElementById('novoClienteTel').value = "";
             document.getElementById('novoClienteEnd').value = "";
@@ -943,13 +986,14 @@
         try {
             const { data, error } = await supabaseClient
                 .from('Motoristas')
-                .select('nome, telefone, config_tarifas')
+                .select('nome, telefone, cidade_padrao, config_tarifas')
                 .eq('id', utilizadorAtual.id)
                 .maybeSingle();
 
             if (!error && data) {
                 perfilMotorista.nome = data.nome || "";
                 perfilMotorista.telefone = data.telefone || "";
+                perfilMotorista.cidadePadrao = data.cidade_padrao || "Juazeiro e Petrolina";
                 config = { ...DEFAULT_CONFIG, ...(data.config_tarifas || {}) };
             }
         } catch (e) {
@@ -964,6 +1008,7 @@
 
         document.getElementById('cfgNomeMotorista').value = perfilMotorista.nome || "";
         document.getElementById('cfgTelefoneMotorista').value = perfilMotorista.telefone || "";
+        document.getElementById('cfgCidadePadrao').value = perfilMotorista.cidadePadrao || "";
 
         document.getElementById('cfgTaxaBase').value = config.taxaBase;
         document.getElementById('cfgValorKm').value = config.valorKm;
@@ -982,6 +1027,7 @@
 
         perfilMotorista.nome = document.getElementById('cfgNomeMotorista').value.trim();
         perfilMotorista.telefone = document.getElementById('cfgTelefoneMotorista').value.trim();
+        perfilMotorista.cidadePadrao = document.getElementById('cfgCidadePadrao').value.trim() || "Juazeiro e Petrolina";
 
         config = {
             taxaBase: Math.max(0, parseFloat(document.getElementById('cfgTaxaBase').value) || 0),
@@ -1001,6 +1047,7 @@
                 email: utilizadorAtual.email,
                 nome: perfilMotorista.nome || null,
                 telefone: perfilMotorista.telefone || null,
+                cidade_padrao: perfilMotorista.cidadePadrao,
                 config_tarifas: config
             });
 
@@ -1164,7 +1211,6 @@
         btn.innerText = "⏳ Salvando na nuvem...";
         btn.disabled = true;
 
-        // Sincroniza status atuais selecionados antes de gravar
         ultimaCorridaNuvem.status = document.getElementById('statusCorrida').value;
         ultimaCorridaNuvem.status_pagamento = document.getElementById('statusPagamento').value;
 
@@ -1175,9 +1221,8 @@
         btn.innerText = "💾 Guardar Corrida na Nuvem";
         btn.disabled = false;
 
-        if (error) {
-            alert("Erro ao salvar na nuvem: " + error.message);
-        } else {
+        if (error) alert("Erro ao salvar na nuvem: " + error.message);
+        else {
             showToast("Corrida salva na nuvem com sucesso!");
             carregarHistoricoSupabase();
         }
@@ -1441,7 +1486,7 @@
     }
 
     // ==========================================
-    // 7. GRÁFICO, ROTAS E WHATSAPP
+    // 7. GRÁFICO, ROTAS INTELIGENTES E WHATSAPP
     // ==========================================
     function desenharGrafico(lucro, gas, manut, terceiro) {
         const canvas = document.getElementById('lucroChart');
@@ -1508,13 +1553,22 @@
     }
 
     async function calcularRotaOSM() {
-        const origem = document.getElementById('origem').value.trim();
-        const destino = document.getElementById('destino').value.trim();
+        let origem = document.getElementById('origem').value.trim();
+        let destino = document.getElementById('destino').value.trim();
         const btn = document.getElementById('btnRota');
 
         if (!origem || !destino) {
             alert("Por favor, preencha os campos Origem e Destino primeiro.");
             return;
+        }
+
+        // Aplica a Cidade/Região padrão configurada pelo motorista caso não tenha vírgula
+        const cidadeSufixo = perfilMotorista.cidadePadrao ? `, ${perfilMotorista.cidadePadrao}` : "";
+        if (!origem.toLowerCase().includes(cidadeSufixo.toLowerCase().trim())) {
+            origem += cidadeSufixo;
+        }
+        if (!destino.toLowerCase().includes(cidadeSufixo.toLowerCase().trim())) {
+            destino += cidadeSufixo;
         }
 
         btn.innerText = "⏳ A calcular rota...";
@@ -1523,11 +1577,11 @@
         try {
             const resOrigem = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(origem)}`);
             const dataOrigem = await resOrigem.json();
-            if (dataOrigem.length === 0) throw new Error("Endereço de origem não encontrado.");
+            if (dataOrigem.length === 0) throw new Error(`Origem não encontrada: ${origem}`);
 
             const resDestino = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(destino)}`);
             const dataDestino = await resDestino.json();
-            if (dataDestino.length === 0) throw new Error("Endereço de destino não encontrado.");
+            if (dataDestino.length === 0) throw new Error(`Destino não encontrado: ${destino}`);
 
             const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${dataOrigem[0].lon},${dataOrigem[0].lat};${dataDestino[0].lon},${dataDestino[0].lat}?overview=false`;
             const resRota = await fetch(osrmUrl);
@@ -1535,19 +1589,15 @@
 
             if (dataRota.code !== "Ok") throw new Error("Não foi possível traçar a rota rodoviária.");
 
-            document.getElementById('distancia').value = (dRotaDist(dataRota.routes[0].distance));
+            document.getElementById('distancia').value = (dataRota.routes[0].distance / 1000).toFixed(1);
             document.getElementById('tempo').value = Math.ceil(dataRota.routes[0].duration / 60);
-            showToast("Distância e tempo preenchidos!");
+            showToast("Distância e tempo calculados com sucesso!");
         } catch (erro) {
             alert("Erro: " + erro.message);
         } finally {
             btn.innerText = "📍 Calcular Distância e Tempo Automaticamente";
             btn.disabled = false;
         }
-    }
-
-    function dRotaDist(meters) {
-        return (meters / 1000).toFixed(1);
     }
 
     function showToast(msg) {
