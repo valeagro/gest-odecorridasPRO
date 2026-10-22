@@ -107,15 +107,16 @@
 
         .tab-btn {
             flex: 1;
-            padding: 12px;
+            padding: 12px 6px;
             background: none;
             border: none;
             color: var(--text-secondary);
-            font-size: 0.85rem;
+            font-size: 0.78rem;
             font-weight: 600;
             cursor: pointer;
             border-bottom: 2px solid transparent;
             transition: all 0.2s;
+            text-align: center;
         }
 
         .tab-btn.active {
@@ -197,6 +198,32 @@
         .btn-whatsapp { background-color: #25D366; color: #ffffff; }
         .btn-pdf { background-color: #3B82F6; color: #ffffff; }
         .btn-secondary { background-color: transparent; border: 1px solid var(--border-color); color: var(--text-primary); }
+
+        .btn-mini {
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-size: 0.72rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .badge {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .badge-pago { background: rgba(16, 185, 129, 0.15); color: var(--green-success); border: 1px solid var(--green-success); }
+        .badge-pendente { background: rgba(239, 68, 68, 0.15); color: var(--red-alert); border: 1px solid var(--red-alert); }
+        .badge-agendada { background: rgba(59, 130, 246, 0.15); color: var(--blue-info); border: 1px solid var(--blue-info); }
+        .badge-concluida { background: rgba(142, 142, 154, 0.15); color: var(--text-secondary); border: 1px solid var(--border-color); }
 
         .result-card {
             background: var(--bg-input);
@@ -326,28 +353,60 @@
     </header>
 
     <nav class="tab-nav">
-        <button class="tab-btn active" onclick="switchTab('calculadora', event)">🧮 Nova Corrida</button>
-        <button class="tab-btn" onclick="switchTab('tarifas', event)">⚙️ Perfil & Tarifas</button>
-        <button class="tab-btn" onclick="switchTab('historico', event)">📜 Histórico</button>
+        <button class="tab-btn active" id="tabBtn-calculadora" onclick="switchTab('calculadora')">🧮 Nova</button>
+        <button class="tab-btn" id="tabBtn-clientes" onclick="switchTab('clientes')">👥 Clientes</button>
+        <button class="tab-btn" id="tabBtn-historico" onclick="switchTab('historico')">📜 Histórico</button>
+        <button class="tab-btn" id="tabBtn-tarifas" onclick="switchTab('tarifas')">⚙️ Tarifas</button>
     </nav>
 
     <main>
         <!-- ABA 1: CALCULADORA DE CORRIDA -->
         <div id="tab-calculadora" class="tab-content active">
             <div class="section-title">Dados do Passageiro e Agenda</div>
+            
             <div class="form-group full">
-                <label>WhatsApp do Cliente (Apenas números ou com + para internacional)</label>
-                <input type="tel" id="clienteTel" placeholder="Ex: 87999998888 ou +351...">
+                <label>Selecionar Cliente da Carteira (Opcional)</label>
+                <select id="selectClienteRapido" onchange="selecionarClienteNaCalculadora()">
+                    <option value="">-- Passageiro Avulso / Digitar Manualmente --</option>
+                </select>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Nome do Cliente</label>
+                    <input type="text" id="clienteNome" placeholder="Ex: Maria Silva">
+                </div>
+                <div class="form-group">
+                    <label>WhatsApp do Cliente</label>
+                    <input type="tel" id="clienteTel" placeholder="Ex: 87999998888">
+                </div>
             </div>
             
             <div class="form-grid">
                 <div class="form-group">
-                    <label>Data Agendada</label>
+                    <label>Data da Corrida</label>
                     <input type="date" id="dataCorrida">
                 </div>
                 <div class="form-group">
                     <label>Horário</label>
                     <input type="time" id="horaCorrida">
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Status da Viagem</label>
+                    <select id="statusCorrida">
+                        <option value="concluida">✅ Concluída</option>
+                        <option value="agendada">📅 Agendada</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Pagamento</label>
+                    <select id="statusPagamento">
+                        <option value="pago">💵 Pago</option>
+                        <option value="pendente">⏳ Pendente (Fiado)</option>
+                    </select>
                 </div>
             </div>
 
@@ -465,7 +524,84 @@
             </div>
         </div>
 
-        <!-- ABA 2: PERFIL E TARIFAS (100% NUVEM) -->
+        <!-- ABA 2: CARTEIRA DE CLIENTES (NOVO MÓDULO) -->
+        <div id="tab-clientes" class="tab-content">
+            <div class="section-title">Cadastrar Novo Cliente</div>
+            <div style="background: var(--bg-input); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 18px;">
+                <div class="form-group">
+                    <label>Nome Completo / Apelido</label>
+                    <input type="text" id="novoClienteNome" placeholder="Ex: Dr. Carlos / Dona Ana">
+                </div>
+                <div class="form-group">
+                    <label>WhatsApp</label>
+                    <input type="tel" id="novoClienteTel" placeholder="Ex: 87999998888">
+                </div>
+                <div class="form-group">
+                    <label>Endereço Padrão / Favorito (Opcional)</label>
+                    <input type="text" id="novoClienteEnd" placeholder="Ex: Condomínio Sol, Petrolina">
+                </div>
+                <button class="btn btn-primary" id="btnSalvarCliente" onclick="salvarClienteNuvem()">
+                    ➕ Salvar Cliente na Carteira
+                </button>
+            </div>
+
+            <div class="section-title">Meus Clientes Salvos</div>
+            <div id="clientesLista">
+                <p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem;">Carregando clientes...</p>
+            </div>
+        </div>
+
+        <!-- ABA 3: HISTÓRICO E CONTROLE DE PAGAMENTOS -->
+        <div id="tab-historico" class="tab-content">
+            <div class="section-title">Resumo Financeiro das Corridas</div>
+            <div class="financial-stats" style="margin-top: 0; margin-bottom: 14px;">
+                <div class="stat-item profit">
+                    <div class="title">Total Recebido (Pago)</div>
+                    <div class="val" id="resumoTotalPago">R$ 0,00</div>
+                </div>
+                <div class="stat-item fuel">
+                    <div class="title">A Receber (Fiado/Pendente)</div>
+                    <div class="val" id="resumoTotalPendente">R$ 0,00</div>
+                </div>
+            </div>
+
+            <div class="form-grid" style="margin-bottom: 12px;">
+                <div>
+                    <label style="font-size: 0.72rem;">Filtrar Pagamento</label>
+                    <select id="filtroStatusPag" onchange="renderizarListaHistorico()" style="padding: 8px; font-size: 0.85rem;">
+                        <option value="todos">Todos</option>
+                        <option value="pendente">⏳ Apenas Pendentes</option>
+                        <option value="pago">💵 Apenas Pagos</option>
+                    </select>
+                </div>
+                <div style="display: flex; align-items: flex-end;">
+                    <button class="btn btn-secondary" onclick="carregarHistoricoSupabase()" style="margin-top: 0; padding: 9px; font-size: 0.85rem;">
+                        🔄 Atualizar
+                    </button>
+                </div>
+            </div>
+            
+            <div id="historicoLista">
+                <p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem; margin-top: 30px;">
+                    Carregando histórico...
+                </p>
+            </div>
+            
+            <div style="background: var(--bg-input); padding: 12px; border-radius: 8px; margin-top: 20px; border: 1px solid var(--border-color);">
+                <div class="section-title" style="margin-top: 0;">Filtro de Relatório PDF (Nuvem)</div>
+                <label style="font-size: 0.75rem; margin-bottom: 8px;">Selecione uma data específica (ou apague a data para exportar todo o histórico):</label>
+                <input type="date" id="filtroDataPDF" style="margin-bottom: 10px;">
+                <button class="btn btn-pdf" id="btnPdf" onclick="exportarPDFReal()">
+                    📄 Gerar Relatório Financeiro (PDF)
+                </button>
+            </div>
+
+            <button class="btn btn-secondary" onclick="exportarCSV()" style="margin-top: 10px;">
+                📊 Exportar Planilha (CSV)
+            </button>
+        </div>
+
+        <!-- ABA 4: PERFIL E TARIFAS -->
         <div id="tab-tarifas" class="tab-content">
             <div class="section-title">Meus Dados Profissionais (Saem no Orçamento)</div>
             <div class="form-group full">
@@ -525,33 +661,6 @@
                 ☁️ Salvar Perfil e Tarifas na Nuvem
             </button>
         </div>
-
-        <!-- ABA 3: HISTÓRICO DE CORRIDAS (100% NUVEM) -->
-        <div id="tab-historico" class="tab-content">
-            <div class="section-title">Corridas Salvas na Nuvem</div>
-            <button class="btn btn-secondary" onclick="carregarHistoricoSupabase()" style="margin-bottom: 15px; padding: 10px;">
-                🔄 Atualizar Lista da Nuvem
-            </button>
-            
-            <div id="historicoLista">
-                <p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem; margin-top: 30px;">
-                    Carregando histórico...
-                </p>
-            </div>
-            
-            <div style="background: var(--bg-input); padding: 12px; border-radius: 8px; margin-top: 20px; border: 1px solid var(--border-color);">
-                <div class="section-title" style="margin-top: 0;">Filtro de Relatório PDF (Nuvem)</div>
-                <label style="font-size: 0.75rem; margin-bottom: 8px;">Selecione uma data específica (ou apague a data para exportar todo o histórico da nuvem):</label>
-                <input type="date" id="filtroDataPDF" style="margin-bottom: 10px;">
-                <button class="btn btn-pdf" id="btnPdf" onclick="exportarPDFReal()">
-                    📄 Gerar Relatório Financeiro (PDF)
-                </button>
-            </div>
-
-            <button class="btn btn-secondary" onclick="exportarCSV()" style="margin-top: 10px;">
-                📊 Exportar Planilha (CSV)
-            </button>
-        </div>
     </main>
 </div>
 
@@ -582,6 +691,7 @@
     let config = { ...DEFAULT_CONFIG };
     let ultimaCorridaNuvem = null;
     let corridasCacheNuvem = [];
+    let clientesCacheNuvem = [];
     let textoReciboAtual = "";
 
     // ==========================================
@@ -670,8 +780,11 @@
         document.getElementById('main-app').style.display = 'flex';
         document.getElementById('userEmailDisplay').innerText = utilizadorAtual.email;
         
-        await carregarPerfilETarifasNuvem();
-        await carregarHistoricoSupabase();
+        await Promise.all([
+            carregarPerfilETarifasNuvem(),
+            carregarClientesSupabase(),
+            carregarHistoricoSupabase()
+        ]);
     }
 
     function alternarCarregamentoAuth(estado) {
@@ -680,17 +793,151 @@
         document.getElementById('btnRegisto').style.display = estado ? 'none' : 'block';
     }
 
-    function switchTab(tabName, ev) {
+    function switchTab(tabName) {
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-        if (ev && ev.currentTarget) ev.currentTarget.classList.add('active');
+        
+        const activeBtn = document.getElementById(`tabBtn-${tabName}`);
+        if (activeBtn) activeBtn.classList.add('active');
         document.getElementById(`tab-${tabName}`).classList.add('active');
         
         if (tabName === 'historico') carregarHistoricoSupabase();
+        if (tabName === 'clientes') carregarClientesSupabase();
     }
 
     // ==========================================
-    // 3. PERFIL E TARIFAS NA NUVEM (TABELA MOTORISTAS)
+    // 3. MÓDULO DE CARTEIRA DE CLIENTES (SUPABASE)
+    // ==========================================
+    async function carregarClientesSupabase() {
+        const container = document.getElementById('clientesLista');
+        const selectRapido = document.getElementById('selectClienteRapido');
+
+        const { data: clientes, error } = await supabaseClient
+            .from('Clientes')
+            .select('*')
+            .order('nome', { ascending: true });
+
+        if (error) {
+            container.innerHTML = `<p style="color: var(--red-alert); text-align: center;">Erro ao carregar clientes: ${error.message}</p>`;
+            return;
+        }
+
+        clientesCacheNuvem = clientes || [];
+
+        // Atualiza o seletor rápido na Calculadora
+        let optionsHtml = '<option value="">-- Passageiro Avulso / Digitar Manualmente --</option>';
+        clientesCacheNuvem.forEach(c => {
+            optionsHtml += `<option value="${c.id}">${c.nome} ${c.telefone ? '(' + c.telefone + ')' : ''}</option>`;
+        });
+        selectRapido.innerHTML = optionsHtml;
+
+        // Renderiza a lista na aba Clientes
+        if (clientesCacheNuvem.length === 0) {
+            container.innerHTML = `<p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem;">Nenhum cliente cadastrado ainda.</p>`;
+            return;
+        }
+
+        let html = '';
+        clientesCacheNuvem.forEach(c => {
+            html += `
+                <div style="background: var(--bg-input); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; margin-bottom: 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <strong style="color: var(--accent-gold); font-size: 0.95rem;">👤 ${c.nome}</strong>
+                        <span style="font-size: 0.8rem; color: var(--text-secondary);">${c.telefone || 'Sem telefone'}</span>
+                    </div>
+                    ${c.endereco_padrao ? `<div style="font-size: 0.78rem; color: var(--text-primary); margin-top: 4px;">📍 Padrão: ${c.endereco_padrao}</div>` : ''}
+                    <div style="display: flex; gap: 6px; margin-top: 10px;">
+                        <button class="btn-mini" style="border-color: var(--accent-gold); color: var(--accent-gold);" onclick="iniciarCorridaParaCliente('${c.id}')">⚡ Iniciar Corrida</button>
+                        ${c.telefone ? `<button class="btn-mini" style="border-color: #25D366; color: #25D366;" onclick="abrirWhatsAppDireto('${c.telefone}')">💬 WhatsApp</button>` : ''}
+                        <button class="btn-mini" style="border-color: var(--red-alert); color: var(--red-alert); margin-left: auto;" onclick="excluirClienteNuvem('${c.id}')">🗑️</button>
+                    </div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+    }
+
+    async function salvarClienteNuvem() {
+        const nome = document.getElementById('novoClienteNome').value.trim();
+        const telefone = document.getElementById('novoClienteTel').value.trim();
+        const endereco = document.getElementById('novoClienteEnd').value.trim();
+
+        if (!nome) {
+            alert("Informe pelo menos o nome do cliente.");
+            return;
+        }
+
+        const btn = document.getElementById('btnSalvarCliente');
+        btn.innerText = "⏳ Salvando...";
+        btn.disabled = true;
+
+        const { error } = await supabaseClient
+            .from('Clientes')
+            .insert([{
+                motorista_id: utilizadorAtual.id,
+                nome: nome,
+                telefone: telefone || null,
+                endereco_padrao: endereco || null
+            }]);
+
+        btn.innerText = "➕ Salvar Cliente na Carteira";
+        btn.disabled = false;
+
+        if (error) {
+            alert("Erro ao salvar cliente: " + error.message);
+        } else {
+            document.getElementById('novoClienteNome').value = "";
+            document.getElementById('novoClienteTel').value = "";
+            document.getElementById('novoClienteEnd').value = "";
+            showToast("Cliente adicionado à carteira!");
+            carregarClientesSupabase();
+        }
+    }
+
+    async function excluirClienteNuvem(id) {
+        if (!confirm("Deseja remover este cliente da sua carteira?")) return;
+        const { error } = await supabaseClient.from('Clientes').delete().eq('id', id);
+        if (error) alert("Erro ao excluir: " + error.message);
+        else {
+            showToast("Cliente removido!");
+            carregarClientesSupabase();
+        }
+    }
+
+    function selecionarClienteNaCalculadora() {
+        const clienteId = document.getElementById('selectClienteRapido').value;
+        if (!clienteId) {
+            document.getElementById('clienteNome').value = "";
+            document.getElementById('clienteTel').value = "";
+            return;
+        }
+        const cliente = clientesCacheNuvem.find(c => c.id === clienteId);
+        if (cliente) {
+            document.getElementById('clienteNome').value = cliente.nome || "";
+            document.getElementById('clienteTel').value = cliente.telefone || "";
+            if (cliente.endereco_padrao && !document.getElementById('origem').value) {
+                document.getElementById('origem').value = cliente.endereco_padrao;
+            }
+        }
+    }
+
+    function iniciarCorridaParaCliente(clienteId) {
+        switchTab('calculadora');
+        document.getElementById('selectClienteRapido').value = clienteId;
+        selecionarClienteNaCalculadora();
+        showToast("Dados do cliente preenchidos!");
+    }
+
+    function abrirWhatsAppDireto(telRaw) {
+        let telLimpo = telRaw.replace(/\D/g, '');
+        if (telLimpo.length >= 10 && telLimpo.length <= 11 && !telRaw.startsWith('+')) {
+            telLimpo = '55' + telLimpo;
+        }
+        window.open(`https://wa.me/${telLimpo}`, '_blank');
+    }
+
+    // ==========================================
+    // 4. PERFIL E TARIFAS NA NUVEM (MOTORISTAS)
     // ==========================================
     async function carregarPerfilETarifasNuvem() {
         try {
@@ -708,7 +955,6 @@
         } catch (e) {
             console.error("Erro ao carregar perfil da nuvem:", e);
         }
-
         atualizarInterfacePerfilETarifas();
     }
 
@@ -761,16 +1007,15 @@
         btn.innerText = "☁️ Salvar Perfil e Tarifas na Nuvem";
         btn.disabled = false;
 
-        if (error) {
-            alert("Erro ao salvar configurações na nuvem: " + error.message);
-        } else {
+        if (error) alert("Erro ao salvar configurações: " + error.message);
+        else {
             atualizarInterfacePerfilETarifas();
-            showToast("Perfil e tarifas sincronizados na nuvem!");
+            showToast("Perfil e tarifas sincronizados!");
         }
     }
 
     // ==========================================
-    // 4. CÁLCULO DE CORRIDA E ORÇAMENTO COMPLETO
+    // 5. CÁLCULO DE CORRIDA E ORÇAMENTO COMPLETO
     // ==========================================
     function toggleJustificativa() {
         const dinamica = parseFloat(document.getElementById('dinamica').value) || 1;
@@ -790,6 +1035,11 @@
         const extras = parseFloat(document.getElementById('extras').value) || 0;
         const desconto = parseFloat(document.getElementById('desconto').value) || 0;
         const motivoDinamica = document.getElementById('motivoDinamica').value || 'Condições especiais do trajeto/horário';
+
+        const clienteId = document.getElementById('selectClienteRapido').value || null;
+        const clienteNome = document.getElementById('clienteNome').value.trim();
+        const statusCorrida = document.getElementById('statusCorrida').value;
+        const statusPagamento = document.getElementById('statusPagamento').value;
 
         const origem = document.getElementById('origem').value.trim();
         const destino = document.getElementById('destino').value.trim();
@@ -850,6 +1100,7 @@
         r += `🚘 *ORÇAMENTO DE CORRIDA PARTICULAR*\n`;
         r += `===============================\n`;
         r += `*Motorista:* ${nomeAssinatura}\n`;
+        if (clienteNome) r += `👤 *Passageiro(a):* ${clienteNome}\n`;
         r += `📅 *Data/Hora:* ${dataStr}\n\n`;
 
         if (origem || destino) {
@@ -883,9 +1134,10 @@
         document.getElementById('receiptText').innerText = r;
         document.getElementById('resultCard').style.display = 'block';
 
-        // Objeto completo pronto para salvar na tabela Corridas do Supabase
         ultimaCorridaNuvem = {
             motorista_id: utilizadorAtual.id,
+            cliente_id: clienteId,
+            cliente_nome: clienteNome || null,
             origem: origem || 'Não especificada',
             destino: destino || 'Não especificado',
             data_hora: isoDataHora,
@@ -898,19 +1150,23 @@
             terceiro: Number(valorTerceiro.toFixed(2)),
             extras: Number(extras.toFixed(2)),
             desconto: Number(desconto.toFixed(2)),
-            status: 'concluida',
-            status_pagamento: 'pendente'
+            status: statusCorrida,
+            status_pagamento: statusPagamento
         };
     }
 
     // ==========================================
-    // 5. HISTÓRICO E RELATÓRIOS 100% NUVEM
+    // 6. HISTÓRICO, PAGAMENTOS E RELATÓRIOS
     // ==========================================
     async function gravarCorridaSistema() {
         if (!ultimaCorridaNuvem) return;
         const btn = document.getElementById('btnSalvarNuvem');
         btn.innerText = "⏳ Salvando na nuvem...";
         btn.disabled = true;
+
+        // Sincroniza status atuais selecionados antes de gravar
+        ultimaCorridaNuvem.status = document.getElementById('statusCorrida').value;
+        ultimaCorridaNuvem.status_pagamento = document.getElementById('statusPagamento').value;
 
         const { error } = await supabaseClient
             .from('Corridas')
@@ -943,41 +1199,111 @@
         }
 
         corridasCacheNuvem = corridas || [];
+        renderizarListaHistorico();
+    }
 
-        if (corridasCacheNuvem.length === 0) {
-            container.innerHTML = `<p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem; margin-top: 20px;">Nenhuma corrida salva na nuvem ainda.</p>`;
+    function renderizarListaHistorico() {
+        const container = document.getElementById('historicoLista');
+        const filtroPag = document.getElementById('filtroStatusPag').value;
+
+        let totalPago = 0;
+        let totalPendente = 0;
+
+        corridasCacheNuvem.forEach(c => {
+            const val = Number(c.valor) || 0;
+            if (c.status_pagamento === 'pago') totalPago += val;
+            else totalPendente += val;
+        });
+
+        document.getElementById('resumoTotalPago').innerText = fmtMoney(totalPago);
+        document.getElementById('resumoTotalPendente').innerText = fmtMoney(totalPendente);
+
+        let listaExibicao = corridasCacheNuvem;
+        if (filtroPag !== 'todos') {
+            listaExibicao = corridasCacheNuvem.filter(c => (c.status_pagamento || 'pendente') === filtroPag);
+        }
+
+        if (listaExibicao.length === 0) {
+            container.innerHTML = `<p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem; margin-top: 20px;">Nenhuma corrida encontrada para este filtro.</p>`;
             return;
         }
 
         let html = '';
-        corridasCacheNuvem.slice(0, 15).forEach(item => {
+        listaExibicao.slice(0, 25).forEach(item => {
             const dataFmt = item.data_hora ? new Date(item.data_hora).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : 'Sem data';
             const lucroVal = Number(item.lucro) || 0;
+            const isPago = item.status_pagamento === 'pago';
+            const isAgendada = item.status === 'agendada';
+
             html += `
-                <div style="background: var(--bg-input); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; margin-bottom: 8px;">
-                    <div style="display: flex; justify-content: space-between; font-weight: bold; color: var(--accent-gold);">
-                        <span>${fmtMoney(item.valor)}</span>
-                        <span style="color: ${lucroVal >= 0 ? 'var(--green-success)' : 'var(--red-alert)'}; font-size: 0.85rem;">
-                            Lucro: ${fmtMoney(lucroVal)}
-                        </span>
+                <div style="background: var(--bg-input); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; margin-bottom: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-weight: 800; font-size: 1.05rem; color: var(--accent-gold);">${fmtMoney(item.valor)}</span>
+                        <div style="display: flex; gap: 6px;">
+                            <span class="badge ${isAgendada ? 'badge-agendada' : 'badge-concluida'}">${isAgendada ? '📅 Agendada' : '✅ Concluída'}</span>
+                            <span class="badge ${isPago ? 'badge-pago' : 'badge-pendente'}">${isPago ? '💵 Pago' : '⏳ Pendente'}</span>
+                        </div>
                     </div>
-                    <div style="font-size: 0.8rem; color: var(--text-primary); margin-top: 4px;">${item.origem} ➔ ${item.destino}</div>
-                    <div style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 2px;">
-                        Data: ${dataFmt} • ${item.distancia || 0} km (${item.tempo || 0} min)
+                    ${item.cliente_nome ? `<div style="font-size: 0.8rem; color: var(--accent-gold); margin-top: 5px; font-weight: 600;">👤 Cliente: ${item.cliente_nome}</div>` : ''}
+                    <div style="font-size: 0.82rem; color: var(--text-primary); margin-top: 4px;">${item.origem} ➔ ${item.destino}</div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-secondary); margin-top: 4px;">
+                        <span>📅 ${dataFmt} • ${item.distancia || 0} km</span>
+                        <span style="color: ${lucroVal >= 0 ? 'var(--green-success)' : 'var(--red-alert)'}; font-weight: bold;">Lucro: ${fmtMoney(lucroVal)}</span>
+                    </div>
+                    <div style="display: flex; gap: 6px; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--border-color);">
+                        <button class="btn-mini" onclick="alternarPagamentoCorrida('${item.id}', '${isPago ? 'pendente' : 'pago'}')" style="border-color: ${isPago ? 'var(--border-color)' : 'var(--green-success)'}; color: ${isPago ? 'var(--text-secondary)' : 'var(--green-success)'};">
+                            ${isPago ? '↩️ Marcar Pendente' : '✅ Receber (Pago)'}
+                        </button>
+                        <button class="btn-mini" onclick="alternarStatusViagem('${item.id}', '${isAgendada ? 'concluida' : 'agendada'}')">
+                            ${isAgendada ? '🏁 Concluir Viagem' : '📅 Voltar p/ Agenda'}
+                        </button>
+                        <button class="btn-mini" style="border-color: var(--red-alert); color: var(--red-alert); margin-left: auto;" onclick="excluirCorridaNuvem('${item.id}')">🗑️</button>
                     </div>
                 </div>
             `;
         });
 
-        if (corridasCacheNuvem.length > 15) {
-            html += `<p style="text-align: center; font-size: 0.75rem; color: var(--text-secondary);">+ ${corridasCacheNuvem.length - 15} viagens na nuvem. Exporte o relatório para ver todas.</p>`;
-        }
-
         container.innerHTML = html;
     }
 
+    async function alternarPagamentoCorrida(id, novoStatusPag) {
+        const { error } = await supabaseClient
+            .from('Corridas')
+            .update({ status_pagamento: novoStatusPag })
+            .eq('id', id);
+
+        if (error) alert("Erro ao atualizar pagamento: " + error.message);
+        else {
+            showToast(novoStatusPag === 'pago' ? "Pagamento confirmado!" : "Marcado como pendente!");
+            carregarHistoricoSupabase();
+        }
+    }
+
+    async function alternarStatusViagem(id, novoStatus) {
+        const { error } = await supabaseClient
+            .from('Corridas')
+            .update({ status: novoStatus })
+            .eq('id', id);
+
+        if (error) alert("Erro ao atualizar status: " + error.message);
+        else {
+            showToast("Status da viagem atualizado!");
+            carregarHistoricoSupabase();
+        }
+    }
+
+    async function excluirCorridaNuvem(id) {
+        if (!confirm("Tem certeza que deseja apagar esta corrida do histórico?")) return;
+        const { error } = await supabaseClient.from('Corridas').delete().eq('id', id);
+        if (error) alert("Erro ao excluir: " + error.message);
+        else {
+            showToast("Corrida excluída!");
+            carregarHistoricoSupabase();
+        }
+    }
+
     function obterCorridasFiltradas() {
-        const filtroDataInput = document.getElementById('filtroDataPDF').value; // YYYY-MM-DD
+        const filtroDataInput = document.getElementById('filtroDataPDF').value;
         if (!filtroDataInput) return corridasCacheNuvem;
 
         return corridasCacheNuvem.filter(item => {
@@ -1010,8 +1336,6 @@
             const gas = Number(item.combustivel) || 0;
             const manut = Number(item.manutencao) || 0;
             const terc = Number(item.terceiro) || 0;
-            const extras = Number(item.extras) || 0;
-            const desconto = Number(item.desconto) || 0;
 
             totalBruto += valor;
             totalLucro += lucro;
@@ -1019,13 +1343,11 @@
             totalManut += manut;
             totalTerc += terc;
 
-            const trajeto = `${item.origem}\n➔ ${item.destino}`;
+            const clienteTxt = item.cliente_nome ? `[${item.cliente_nome}]\n` : '';
+            const trajeto = `${clienteTxt}${item.origem} ➔ ${item.destino}`;
             const distTempo = `${item.distancia || 0} km\n${item.tempo || 0} min`;
-
-            let custosDetalhados = `Gas: ${fmtMoney(gas)}\nMan: ${fmtMoney(manut)}\nTaxa: ${fmtMoney(terc)}`;
-            if (extras > 0) custosDetalhados += `\nExtras: ${fmtMoney(extras)}`;
-            if (desconto > 0) custosDetalhados += `\nDesc: -${fmtMoney(desconto)}`;
-
+            const statusPag = item.status_pagamento === 'pago' ? 'PAGO' : 'PENDENTE';
+            const custosDetalhados = `Gas: ${fmtMoney(gas)}\nMan: ${fmtMoney(manut)}\nPag: ${statusPag}`;
             const dataCurta = item.data_hora ? new Date(item.data_hora).toLocaleDateString('pt-BR') : '--';
 
             return [dataCurta, trajeto, distTempo, custosDetalhados, fmtMoney(valor), fmtMoney(lucro)];
@@ -1073,7 +1395,7 @@
 
         doc.autoTable({
             startY: 65,
-            head: [['Data', 'Trajeto (Origem -> Destino)', 'Dist/Tempo', 'Detalhamento Custos', 'Total Recebido', 'Lucro Real']],
+            head: [['Data', 'Cliente / Trajeto', 'Dist/Tempo', 'Custos / Status', 'Valor Bruto', 'Lucro Real']],
             body: tableBody,
             theme: 'grid',
             headStyles: { fillColor: [18, 18, 20], textColor: [255, 255, 255], fontStyle: 'bold' },
@@ -1102,16 +1424,13 @@
             return;
         }
         
-        let csv = "\uFEFFData;Origem;Destino;Distancia;Tempo;Custo Combustivel;Custo Manutencao;Taxa Terceiro;Lucro Liquido;Valor Final\n";
+        let csv = "\uFEFFData;Cliente;Origem;Destino;Status Viagem;Status Pagamento;Distancia;Tempo;Lucro Liquido;Valor Final\n";
         corridasCacheNuvem.forEach(item => {
             const dataFmt = item.data_hora ? new Date(item.data_hora).toLocaleString('pt-BR') : '';
-            const gasFmt = (Number(item.combustivel) || 0).toFixed(2).replace('.', ',');
-            const manFmt = (Number(item.manutencao) || 0).toFixed(2).replace('.', ',');
-            const tercFmt = (Number(item.terceiro) || 0).toFixed(2).replace('.', ',');
             const lucroFmt = (Number(item.lucro) || 0).toFixed(2).replace('.', ',');
             const valorFmt = (Number(item.valor) || 0).toFixed(2).replace('.', ',');
             
-            csv += `"${dataFmt}";"${item.origem}";"${item.destino}";"${item.distancia || 0}";"${item.tempo || 0}";"${gasFmt}";"${manFmt}";"${tercFmt}";"${lucroFmt}";"${valorFmt}"\n`;
+            csv += `"${dataFmt}";"${item.cliente_nome || 'Avulso'}";"${item.origem}";"${item.destino}";"${item.status || ''}";"${item.status_pagamento || ''}";"${item.distancia || 0}";"${item.tempo || 0}";"${lucroFmt}";"${valorFmt}"\n`;
         });
 
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -1122,7 +1441,7 @@
     }
 
     // ==========================================
-    // 6. GRÁFICO, ROTAS E WHATSAPP
+    // 7. GRÁFICO, ROTAS E WHATSAPP
     // ==========================================
     function desenharGrafico(lucro, gas, manut, terceiro) {
         const canvas = document.getElementById('lucroChart');
@@ -1216,7 +1535,7 @@
 
             if (dataRota.code !== "Ok") throw new Error("Não foi possível traçar a rota rodoviária.");
 
-            document.getElementById('distancia').value = (dataRota.routes[0].distance / 1000).toFixed(1);
+            document.getElementById('distancia').value = (dRotaDist(dataRota.routes[0].distance));
             document.getElementById('tempo').value = Math.ceil(dataRota.routes[0].duration / 60);
             showToast("Distância e tempo preenchidos!");
         } catch (erro) {
@@ -1225,6 +1544,10 @@
             btn.innerText = "📍 Calcular Distância e Tempo Automaticamente";
             btn.disabled = false;
         }
+    }
+
+    function dRotaDist(meters) {
+        return (meters / 1000).toFixed(1);
     }
 
     function showToast(msg) {
