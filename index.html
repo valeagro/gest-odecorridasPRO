@@ -1,49 +1,1561 @@
-const CACHE_NAME = 'calc-pro-v2';
-const ASSETS_TO_CACHE = [
-  'index.html',
-  'manifest.json',
-  'icon-192.png',
-  'icon-512.png'
-];
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#121214">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Calculadora PRO - Gestão de Corridas</title>
 
-// Instalação do Service Worker
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE);
-    })
-  );
-  self.skipWaiting();
-});
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.jpg">
+    
+    <!-- Bibliotecas para Geração de PDF REAL -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    
+    <!-- SDK SUPABASE -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-// Ativação e limpeza de caches antigos
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
-        keys.map((key) => {
-          if (key !== CACHE_NAME) {
-            return caches.delete(key);
-          }
-        })
-      );
-    })
-  );
-  self.clients.claim();
-});
+    <style>
+        :root {
+            --bg-body: #121214;
+            --bg-card: #1E1E22;
+            --bg-input: #121214;
+            --border-color: #2D2D33;
+            --text-primary: #F3F3F5;
+            --text-secondary: #8E8E9A;
+            --accent-gold: #F59E0B;
+            --accent-gold-hover: #D97706;
+            --green-success: #10B981;
+            --red-alert: #EF4444;
+            --blue-info: #3B82F6;
+        }
 
-// Estratégia Network-First: Tenta a rede primeiro, se falhar usa o cache
-self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    fetch(event.request)
-      .then((networkResponse) => {
-        return caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, networkResponse.clone());
-          return networkResponse;
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            background: var(--bg-card);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+        }
+
+        #auth-screen {
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin: auto;
+            max-width: 90%;
+            width: 100%;
+        }
+
+        header {
+            background: rgba(30, 30, 34, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.1rem;
+            color: var(--accent-gold);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        header p {
+            margin: 2px 0 0 0;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .tab-nav {
+            display: flex;
+            background: var(--bg-body);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px 6px;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .tab-btn.active {
+            color: var(--accent-gold);
+            border-bottom-color: var(--accent-gold);
+            background: var(--bg-card);
+        }
+
+        main {
+            padding: 16px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .section-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-secondary);
+            margin: 18px 0 10px 0;
+            font-weight: 700;
+        }
+
+        .section-title:first-child { margin-top: 0; }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .form-group { margin-bottom: 12px; }
+        .form-group.full { grid-column: span 2; }
+
+        label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-primary);
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, select:focus { border-color: var(--accent-gold); }
+        input[type="date"], input[type="time"] { color-scheme: dark; }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border-radius: 8px;
+            border: none;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+            margin-top: 10px;
+        }
+
+        .btn-primary { background-color: var(--accent-gold); color: #121214; }
+        .btn-primary:active { background-color: var(--accent-gold-hover); transform: scale(0.98); }
+        .btn-whatsapp { background-color: #25D366; color: #ffffff; }
+        .btn-pdf { background-color: #3B82F6; color: #ffffff; }
+        .btn-secondary { background-color: transparent; border: 1px solid var(--border-color); color: var(--text-primary); }
+
+        .btn-mini {
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-size: 0.72rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .badge {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .badge-pago { background: rgba(16, 185, 129, 0.15); color: var(--green-success); border: 1px solid var(--green-success); }
+        .badge-pendente { background: rgba(239, 68, 68, 0.15); color: var(--red-alert); border: 1px solid var(--red-alert); }
+        .badge-agendada { background: rgba(59, 130, 246, 0.15); color: var(--blue-info); border: 1px solid var(--blue-info); }
+        .badge-concluida { background: rgba(142, 142, 154, 0.15); color: var(--text-secondary); border: 1px solid var(--border-color); }
+
+        .result-card {
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .price-display {
+            text-align: center;
+            padding-bottom: 12px;
+            border-bottom: 1px dashed var(--border-color);
+        }
+
+        .price-label { font-size: 0.8rem; color: var(--text-secondary); }
+        .price-value { font-size: 2.2rem; font-weight: 800; color: var(--green-success); margin: 4px 0; }
+
+        .financial-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin: 14px 0;
+        }
+
+        .stat-item {
+            background: var(--bg-card);
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .stat-item .title { font-size: 0.7rem; color: var(--text-secondary); }
+        .stat-item .val { font-size: 0.95rem; font-weight: 700; margin-top: 2px; }
+        .stat-item.profit .val { color: var(--green-success); }
+        .stat-item.fuel .val { color: #F87171; }
+        .stat-item.maint .val { color: #FBBF24; }
+        .stat-item.third .val { color: #60A5FA; }
+
+        .chart-box {
+            position: relative;
+            width: 100%;
+            height: 180px;
+            margin: 15px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        canvas { max-width: 100%; max-height: 100%; }
+
+        .receipt-preview {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: #D4D4D8;
+            white-space: pre-wrap;
+            margin-top: 12px;
+            max-height: 180px;
+            overflow-y: auto;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--green-success);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            z-index: 200;
+        }
+
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--accent-gold);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: none;
+            margin: auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+<!-- TELA DE AUTENTICAÇÃO -->
+<div id="auth-container" class="app-container" style="justify-content: center;">
+    <div id="auth-screen">
+        <h2 style="text-align: center; color: var(--accent-gold); margin-top:0;">Calculadora PRO</h2>
+        <p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem;">Acesse sua conta para gerenciar corridas</p>
+        
+        <div class="form-group">
+            <label>E-mail</label>
+            <input type="email" id="authEmail" placeholder="seu@email.com">
+        </div>
+        <div class="form-group">
+            <label>Senha</label>
+            <input type="password" id="authSenha" placeholder="******">
+        </div>
+        
+        <div class="loader" id="authLoader"></div>
+        <button class="btn btn-primary" onclick="realizarLogin()" id="btnLogin">Entrar</button>
+        <button class="btn btn-secondary" onclick="realizarRegisto()" id="btnRegisto">Criar Conta</button>
+    </div>
+</div>
+
+<!-- APLICAÇÃO PRINCIPAL -->
+<div id="main-app" class="app-container" style="display: none;">
+    <header>
+        <div>
+            <h1 id="headerNomeMotorista">🚘 Painel do Motorista</h1>
+            <p id="userEmailDisplay">Calculadora PRO & Gestão de Corridas</p>
+        </div>
+        <button onclick="fazerLogout()" style="background: none; border: none; color: var(--red-alert); cursor: pointer; font-weight: bold; font-size: 0.85rem;">Sair</button>
+    </header>
+
+    <nav class="tab-nav">
+        <button class="tab-btn active" id="tabBtn-calculadora" onclick="switchTab('calculadora')">🧮 Nova</button>
+        <button class="tab-btn" id="tabBtn-clientes" onclick="switchTab('clientes')">👥 Clientes</button>
+        <button class="tab-btn" id="tabBtn-historico" onclick="switchTab('historico')">📜 Histórico</button>
+        <button class="tab-btn" id="tabBtn-tarifas" onclick="switchTab('tarifas')">⚙️ Tarifas</button>
+    </nav>
+
+    <main>
+        <!-- ABA 1: CALCULADORA DE CORRIDA -->
+        <div id="tab-calculadora" class="tab-content active">
+            <div class="section-title">Dados do Passageiro e Agenda</div>
+            
+            <div class="form-group full">
+                <label>Selecionar Cliente da Carteira (Opcional)</label>
+                <select id="selectClienteRapido" onchange="selecionarClienteNaCalculadora()">
+                    <option value="">-- Passageiro Avulso / Digitar Manualmente --</option>
+                </select>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Nome do Cliente</label>
+                    <input type="text" id="clienteNome" placeholder="Ex: Maria Silva">
+                </div>
+                <div class="form-group">
+                    <label>WhatsApp do Cliente</label>
+                    <input type="tel" id="clienteTel" placeholder="Ex: 87999998888">
+                </div>
+            </div>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Data da Corrida</label>
+                    <input type="date" id="dataCorrida">
+                </div>
+                <div class="form-group">
+                    <label>Horário</label>
+                    <input type="time" id="horaCorrida">
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Status da Viagem</label>
+                    <select id="statusCorrida">
+                        <option value="concluida">✅ Concluída</option>
+                        <option value="agendada">📅 Agendada</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Pagamento</label>
+                    <select id="statusPagamento">
+                        <option value="pago">💵 Pago</option>
+                        <option value="pendente">⏳ Pendente (Fiado)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Origem</label>
+                    <input type="text" id="origem" placeholder="Ex: Aeroporto">
+                </div>
+                <div class="form-group">
+                    <label>Destino</label>
+                    <input type="text" id="destino" placeholder="Ex: Hotel Centro">
+                </div>
+            </div>
+            
+            <div class="form-group full">
+                <button type="button" class="btn btn-secondary" id="btnRota" onclick="calcularRotaOSM()" style="font-size: 0.85rem; padding: 10px; border-style: dashed;">
+                    📍 Calcular Distância e Tempo Automaticamente
+                </button>
+            </div>
+
+            <div class="section-title">Parâmetros do Trajeto</div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Distância (KM)</label>
+                    <input type="number" id="distancia" placeholder="Ex: 25.5" step="0.1" min="0">
+                </div>
+                <div class="form-group">
+                    <label>Tempo Estimado (Min)</label>
+                    <input type="number" id="tempo" placeholder="Ex: 35" min="0">
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Espera / Paradas (Min)</label>
+                    <input type="number" id="tempoEspera" value="0" placeholder="Ex: 10" min="0">
+                </div>
+                <div class="form-group">
+                    <label>Cobrar Retorno Vazio?</label>
+                    <select id="retornoVazio">
+                        <option value="0">Não (Apenas ida)</option>
+                        <option value="0.5">Sim (Adicionar +50% KM/Tempo)</option>
+                        <option value="1.0">Sim (Cobrar Ida e Volta 100%)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Dinâmica (Multiplicador)</label>
+                    <input type="number" id="dinamica" value="1.0" step="0.1" min="1.0" oninput="toggleJustificativa()">
+                </div>
+                <div class="form-group">
+                    <label>Desconto Especial (R$)</label>
+                    <input type="number" id="desconto" value="0.00" step="0.50" min="0">
+                </div>
+            </div>
+            
+            <div class="form-group full">
+                <label>Pedágios / Custos Extras (R$)</label>
+                <input type="number" id="extras" value="0.00" step="0.50" min="0">
+            </div>
+
+            <div class="form-group full" id="boxJustificativa" style="display: none;">
+                <label>Motivo do Dinâmico (Sairá no Orçamento)</label>
+                <input type="text" id="motivoDinamica" placeholder="Ex: Horário de Pico / Chuva Forte / Madrugada">
+            </div>
+
+            <button class="btn btn-primary" onclick="calcularEExibir()">Calcular Preço & Análise</button>
+
+            <!-- CARD DE RESULTADO E GRÁFICO -->
+            <div class="result-card" id="resultCard">
+                <div class="price-display">
+                    <div class="price-label">Valor Sugerido ao Cliente</div>
+                    <div class="price-value" id="resValorTotal">R$ 0,00</div>
+                    <div style="font-size: 0.8rem; color: var(--text-secondary);" id="resResumoTrajeto">--</div>
+                </div>
+
+                <div class="section-title">Análise de Lucro Líquido Real</div>
+                <div class="financial-stats">
+                    <div class="stat-item profit">
+                        <div class="title">Lucro Líquido</div>
+                        <div class="val" id="statLucro">R$ 0,00</div>
+                    </div>
+                    <div class="stat-item fuel">
+                        <div class="title">Custo Combustível</div>
+                        <div class="val" id="statGasolina">R$ 0,00</div>
+                    </div>
+                    <div class="stat-item maint">
+                        <div class="title">Custo Manutenção</div>
+                        <div class="val" id="statManutencao">R$ 0,00</div>
+                    </div>
+                    <div class="stat-item third">
+                        <div class="title">Repasse Terceiro</div>
+                        <div class="val" id="statTerceiro">R$ 0,00</div>
+                    </div>
+                </div>
+
+                <div class="chart-box">
+                    <canvas id="lucroChart" width="220" height="180"></canvas>
+                </div>
+
+                <div class="section-title">Prévia da Mensagem para WhatsApp</div>
+                <div class="receipt-preview" id="receiptText"></div>
+
+                <button class="btn btn-primary" id="btnSalvarNuvem" onclick="gravarCorridaSistema()" style="margin-top: 15px;">
+                    💾 Guardar Corrida na Nuvem
+                </button>
+                <button class="btn btn-whatsapp" onclick="enviarWhatsApp()">
+                    📲 Enviar no WhatsApp do Cliente
+                </button>
+                <button class="btn btn-secondary" onclick="copiarTexto()">
+                    📋 Copiar Apenas Texto
+                </button>
+            </div>
+        </div>
+
+        <!-- ABA 2: CARTEIRA DE CLIENTES (NOVO MÓDULO) -->
+        <div id="tab-clientes" class="tab-content">
+            <div class="section-title">Cadastrar Novo Cliente</div>
+            <div style="background: var(--bg-input); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 18px;">
+                <div class="form-group">
+                    <label>Nome Completo / Apelido</label>
+                    <input type="text" id="novoClienteNome" placeholder="Ex: Dr. Carlos / Dona Ana">
+                </div>
+                <div class="form-group">
+                    <label>WhatsApp</label>
+                    <input type="tel" id="novoClienteTel" placeholder="Ex: 87999998888">
+                </div>
+                <div class="form-group">
+                    <label>Endereço Padrão / Favorito (Opcional)</label>
+                    <input type="text" id="novoClienteEnd" placeholder="Ex: Condomínio Sol, Petrolina">
+                </div>
+                <button class="btn btn-primary" id="btnSalvarCliente" onclick="salvarClienteNuvem()">
+                    ➕ Salvar Cliente na Carteira
+                </button>
+            </div>
+
+            <div class="section-title">Meus Clientes Salvos</div>
+            <div id="clientesLista">
+                <p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem;">Carregando clientes...</p>
+            </div>
+        </div>
+
+        <!-- ABA 3: HISTÓRICO E CONTROLE DE PAGAMENTOS -->
+        <div id="tab-historico" class="tab-content">
+            <div class="section-title">Resumo Financeiro das Corridas</div>
+            <div class="financial-stats" style="margin-top: 0; margin-bottom: 14px;">
+                <div class="stat-item profit">
+                    <div class="title">Total Recebido (Pago)</div>
+                    <div class="val" id="resumoTotalPago">R$ 0,00</div>
+                </div>
+                <div class="stat-item fuel">
+                    <div class="title">A Receber (Fiado/Pendente)</div>
+                    <div class="val" id="resumoTotalPendente">R$ 0,00</div>
+                </div>
+            </div>
+
+            <div class="form-grid" style="margin-bottom: 12px;">
+                <div>
+                    <label style="font-size: 0.72rem;">Filtrar Pagamento</label>
+                    <select id="filtroStatusPag" onchange="renderizarListaHistorico()" style="padding: 8px; font-size: 0.85rem;">
+                        <option value="todos">Todos</option>
+                        <option value="pendente">⏳ Apenas Pendentes</option>
+                        <option value="pago">💵 Apenas Pagos</option>
+                    </select>
+                </div>
+                <div style="display: flex; align-items: flex-end;">
+                    <button class="btn btn-secondary" onclick="carregarHistoricoSupabase()" style="margin-top: 0; padding: 9px; font-size: 0.85rem;">
+                        🔄 Atualizar
+                    </button>
+                </div>
+            </div>
+            
+            <div id="historicoLista">
+                <p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem; margin-top: 30px;">
+                    Carregando histórico...
+                </p>
+            </div>
+            
+            <div style="background: var(--bg-input); padding: 12px; border-radius: 8px; margin-top: 20px; border: 1px solid var(--border-color);">
+                <div class="section-title" style="margin-top: 0;">Filtro de Relatório PDF (Nuvem)</div>
+                <label style="font-size: 0.75rem; margin-bottom: 8px;">Selecione uma data específica (ou apague a data para exportar todo o histórico):</label>
+                <input type="date" id="filtroDataPDF" style="margin-bottom: 10px;">
+                <button class="btn btn-pdf" id="btnPdf" onclick="exportarPDFReal()">
+                    📄 Gerar Relatório Financeiro (PDF)
+                </button>
+            </div>
+
+            <button class="btn btn-secondary" onclick="exportarCSV()" style="margin-top: 10px;">
+                📊 Exportar Planilha (CSV)
+            </button>
+        </div>
+
+        <!-- ABA 4: PERFIL E TARIFAS -->
+        <div id="tab-tarifas" class="tab-content">
+            <div class="section-title">Meus Dados Profissionais (Saem no Orçamento)</div>
+            <div class="form-group full">
+                <label>Seu Nome Profissional</label>
+                <input type="text" id="cfgNomeMotorista" placeholder="Ex: Juarez B. Araujo">
+            </div>
+            <div class="form-group full">
+                <label>Seu Telefone / WhatsApp</label>
+                <input type="tel" id="cfgTelefoneMotorista" placeholder="Ex: 87999998888">
+            </div>
+
+            <div class="section-title">Base de Preço da Corrida</div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Taxa Base / Entrada (R$)</label>
+                    <input type="number" id="cfgTaxaBase" step="0.50" min="0">
+                </div>
+                <div class="form-group">
+                    <label>Valor por KM (R$)</label>
+                    <input type="number" id="cfgValorKm" step="0.10" min="0">
+                </div>
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Valor por Minuto (R$)</label>
+                    <input type="number" id="cfgValorMinuto" step="0.05" min="0">
+                </div>
+                <div class="form-group">
+                    <label>Valor Minuto Espera (R$)</label>
+                    <input type="number" id="cfgValorEspera" step="0.05" min="0">
+                </div>
+            </div>
+
+            <div class="section-title">Custos do Veículo (Para Cálculo do Lucro)</div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Preço Combustível (R$/L)</label>
+                    <input type="number" id="cfgPrecoGasolina" step="0.10" min="0">
+                </div>
+                <div class="form-group">
+                    <label>Autonomia (KM/L)</label>
+                    <input type="number" id="cfgKmLiter" step="0.5" min="1">
+                </div>
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Manutenção / Hora (R$)</label>
+                    <input type="number" id="cfgManutencaoHora" step="1.00" min="0">
+                </div>
+                <div class="form-group">
+                    <label>Taxa Terceiro (%)</label>
+                    <input type="number" id="cfgTaxaTerceiro" step="1" min="0" max="100">
+                </div>
+            </div>
+
+            <button class="btn btn-primary" id="btnSalvarTarifas" onclick="salvarConfiguracoesNuvem()">
+                ☁️ Salvar Perfil e Tarifas na Nuvem
+            </button>
+        </div>
+    </main>
+</div>
+
+<div class="toast" id="toast">Ação concluída!</div>
+
+<script>
+    // ==========================================
+    // 1. CONFIGURAÇÃO SUPABASE
+    // ==========================================
+    const SUPABASE_URL = 'https://hkndnvjdvzwztkwbvkls.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhrbmRudmpkdnp3enRrd2J2a2xzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE5MDE2OTYsImV4cCI6MjEwNzQ3NzY5Nn0.aZv-T9CmfilJs6tGO43HYtGlcGqcFnOjAj7zt7d4PCI';
+    
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const DEFAULT_CONFIG = {
+        taxaBase: 5.00,
+        valorKm: 2.20,
+        valorMinuto: 0.35,
+        valorEspera: 0.40,
+        precoGasolina: 5.80,
+        kmLiter: 10.0,
+        manutencaoHora: 8.00,
+        taxaTerceiro: 0
+    };
+
+    let utilizadorAtual = null;
+    let perfilMotorista = { nome: "Motorista Particular", telefone: "" };
+    let config = { ...DEFAULT_CONFIG };
+    let ultimaCorridaNuvem = null;
+    let corridasCacheNuvem = [];
+    let clientesCacheNuvem = [];
+    let textoReciboAtual = "";
+
+    // ==========================================
+    // 2. AUTENTICAÇÃO E INICIALIZAÇÃO
+    // ==========================================
+    window.onload = async function() {
+        const agora = new Date();
+        document.getElementById('dataCorrida').value = agora.toISOString().split('T')[0];
+        document.getElementById('horaCorrida').value = agora.toTimeString().substring(0, 5);
+        document.getElementById('filtroDataPDF').value = "";
+
+        supabaseClient.auth.onAuthStateChange((event, session) => {
+            if (session && session.user) {
+                utilizadorAtual = session.user;
+                mostrarAplicacao();
+            } else if (event === 'SIGNED_OUT') {
+                utilizadorAtual = null;
+                document.getElementById('main-app').style.display = 'none';
+                document.getElementById('auth-container').style.display = 'flex';
+            }
         });
-      })
-      .catch(() => {
-        return caches.match(event.request);
-      })
-  );
-});
+
+        try {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session && session.user) {
+                utilizadorAtual = session.user;
+                mostrarAplicacao();
+            } else {
+                document.getElementById('auth-container').style.display = 'flex';
+            }
+        } catch (e) {
+            console.error("Erro ao verificar sessão:", e);
+            document.getElementById('auth-container').style.display = 'flex';
+        }
+    };
+
+    async function realizarLogin() {
+        const email = document.getElementById('authEmail').value.trim();
+        const password = document.getElementById('authSenha').value;
+        if (!email || !password) { alert("Preencha o e-mail e a senha."); return; }
+
+        alternarCarregamentoAuth(true);
+        try {
+            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+            if (error) alert("Erro de acesso: " + error.message);
+            else if (data && data.user) {
+                utilizadorAtual = data.user;
+                mostrarAplicacao();
+            }
+        } catch (err) {
+            alert("Falha na comunicação: " + err.message);
+        } finally {
+            alternarCarregamentoAuth(false);
+        }
+    }
+
+    async function realizarRegisto() {
+        const email = document.getElementById('authEmail').value.trim();
+        const password = document.getElementById('authSenha').value;
+        if (!email || !password) { alert("Preencha o e-mail e a senha."); return; }
+
+        alternarCarregamentoAuth(true);
+        try {
+            const { data, error } = await supabaseClient.auth.signUp({ email, password });
+            if (error) alert("Erro ao criar conta: " + error.message);
+            else {
+                alert("Conta criada com sucesso!");
+                if (data && data.user) {
+                    utilizadorAtual = data.user;
+                    mostrarAplicacao();
+                }
+            }
+        } catch (err) {
+            alert("Falha na comunicação: " + err.message);
+        } finally {
+            alternarCarregamentoAuth(false);
+        }
+    }
+
+    async function fazerLogout() {
+        await supabaseClient.auth.signOut();
+    }
+
+    async function mostrarAplicacao() {
+        document.getElementById('auth-container').style.display = 'none';
+        document.getElementById('main-app').style.display = 'flex';
+        document.getElementById('userEmailDisplay').innerText = utilizadorAtual.email;
+        
+        await Promise.all([
+            carregarPerfilETarifasNuvem(),
+            carregarClientesSupabase(),
+            carregarHistoricoSupabase()
+        ]);
+    }
+
+    function alternarCarregamentoAuth(estado) {
+        document.getElementById('authLoader').style.display = estado ? 'block' : 'none';
+        document.getElementById('btnLogin').style.display = estado ? 'none' : 'block';
+        document.getElementById('btnRegisto').style.display = estado ? 'none' : 'block';
+    }
+
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        
+        const activeBtn = document.getElementById(`tabBtn-${tabName}`);
+        if (activeBtn) activeBtn.classList.add('active');
+        document.getElementById(`tab-${tabName}`).classList.add('active');
+        
+        if (tabName === 'historico') carregarHistoricoSupabase();
+        if (tabName === 'clientes') carregarClientesSupabase();
+    }
+
+    // ==========================================
+    // 3. MÓDULO DE CARTEIRA DE CLIENTES (SUPABASE)
+    // ==========================================
+    async function carregarClientesSupabase() {
+        const container = document.getElementById('clientesLista');
+        const selectRapido = document.getElementById('selectClienteRapido');
+
+        const { data: clientes, error } = await supabaseClient
+            .from('Clientes')
+            .select('*')
+            .order('nome', { ascending: true });
+
+        if (error) {
+            container.innerHTML = `<p style="color: var(--red-alert); text-align: center;">Erro ao carregar clientes: ${error.message}</p>`;
+            return;
+        }
+
+        clientesCacheNuvem = clientes || [];
+
+        // Atualiza o seletor rápido na Calculadora
+        let optionsHtml = '<option value="">-- Passageiro Avulso / Digitar Manualmente --</option>';
+        clientesCacheNuvem.forEach(c => {
+            optionsHtml += `<option value="${c.id}">${c.nome} ${c.telefone ? '(' + c.telefone + ')' : ''}</option>`;
+        });
+        selectRapido.innerHTML = optionsHtml;
+
+        // Renderiza a lista na aba Clientes
+        if (clientesCacheNuvem.length === 0) {
+            container.innerHTML = `<p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem;">Nenhum cliente cadastrado ainda.</p>`;
+            return;
+        }
+
+        let html = '';
+        clientesCacheNuvem.forEach(c => {
+            html += `
+                <div style="background: var(--bg-input); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; margin-bottom: 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <strong style="color: var(--accent-gold); font-size: 0.95rem;">👤 ${c.nome}</strong>
+                        <span style="font-size: 0.8rem; color: var(--text-secondary);">${c.telefone || 'Sem telefone'}</span>
+                    </div>
+                    ${c.endereco_padrao ? `<div style="font-size: 0.78rem; color: var(--text-primary); margin-top: 4px;">📍 Padrão: ${c.endereco_padrao}</div>` : ''}
+                    <div style="display: flex; gap: 6px; margin-top: 10px;">
+                        <button class="btn-mini" style="border-color: var(--accent-gold); color: var(--accent-gold);" onclick="iniciarCorridaParaCliente('${c.id}')">⚡ Iniciar Corrida</button>
+                        ${c.telefone ? `<button class="btn-mini" style="border-color: #25D366; color: #25D366;" onclick="abrirWhatsAppDireto('${c.telefone}')">💬 WhatsApp</button>` : ''}
+                        <button class="btn-mini" style="border-color: var(--red-alert); color: var(--red-alert); margin-left: auto;" onclick="excluirClienteNuvem('${c.id}')">🗑️</button>
+                    </div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+    }
+
+    async function salvarClienteNuvem() {
+        const nome = document.getElementById('novoClienteNome').value.trim();
+        const telefone = document.getElementById('novoClienteTel').value.trim();
+        const endereco = document.getElementById('novoClienteEnd').value.trim();
+
+        if (!nome) {
+            alert("Informe pelo menos o nome do cliente.");
+            return;
+        }
+
+        const btn = document.getElementById('btnSalvarCliente');
+        btn.innerText = "⏳ Salvando...";
+        btn.disabled = true;
+
+        const { error } = await supabaseClient
+            .from('Clientes')
+            .insert([{
+                motorista_id: utilizadorAtual.id,
+                nome: nome,
+                telefone: telefone || null,
+                endereco_padrao: endereco || null
+            }]);
+
+        btn.innerText = "➕ Salvar Cliente na Carteira";
+        btn.disabled = false;
+
+        if (error) {
+            alert("Erro ao salvar cliente: " + error.message);
+        } else {
+            document.getElementById('novoClienteNome').value = "";
+            document.getElementById('novoClienteTel').value = "";
+            document.getElementById('novoClienteEnd').value = "";
+            showToast("Cliente adicionado à carteira!");
+            carregarClientesSupabase();
+        }
+    }
+
+    async function excluirClienteNuvem(id) {
+        if (!confirm("Deseja remover este cliente da sua carteira?")) return;
+        const { error } = await supabaseClient.from('Clientes').delete().eq('id', id);
+        if (error) alert("Erro ao excluir: " + error.message);
+        else {
+            showToast("Cliente removido!");
+            carregarClientesSupabase();
+        }
+    }
+
+    function selecionarClienteNaCalculadora() {
+        const clienteId = document.getElementById('selectClienteRapido').value;
+        if (!clienteId) {
+            document.getElementById('clienteNome').value = "";
+            document.getElementById('clienteTel').value = "";
+            return;
+        }
+        const cliente = clientesCacheNuvem.find(c => c.id === clienteId);
+        if (cliente) {
+            document.getElementById('clienteNome').value = cliente.nome || "";
+            document.getElementById('clienteTel').value = cliente.telefone || "";
+            if (cliente.endereco_padrao && !document.getElementById('origem').value) {
+                document.getElementById('origem').value = cliente.endereco_padrao;
+            }
+        }
+    }
+
+    function iniciarCorridaParaCliente(clienteId) {
+        switchTab('calculadora');
+        document.getElementById('selectClienteRapido').value = clienteId;
+        selecionarClienteNaCalculadora();
+        showToast("Dados do cliente preenchidos!");
+    }
+
+    function abrirWhatsAppDireto(telRaw) {
+        let telLimpo = telRaw.replace(/\D/g, '');
+        if (telLimpo.length >= 10 && telLimpo.length <= 11 && !telRaw.startsWith('+')) {
+            telLimpo = '55' + telLimpo;
+        }
+        window.open(`https://wa.me/${telLimpo}`, '_blank');
+    }
+
+    // ==========================================
+    // 4. PERFIL E TARIFAS NA NUVEM (MOTORISTAS)
+    // ==========================================
+    async function carregarPerfilETarifasNuvem() {
+        try {
+            const { data, error } = await supabaseClient
+                .from('Motoristas')
+                .select('nome, telefone, config_tarifas')
+                .eq('id', utilizadorAtual.id)
+                .maybeSingle();
+
+            if (!error && data) {
+                perfilMotorista.nome = data.nome || "";
+                perfilMotorista.telefone = data.telefone || "";
+                config = { ...DEFAULT_CONFIG, ...(data.config_tarifas || {}) };
+            }
+        } catch (e) {
+            console.error("Erro ao carregar perfil da nuvem:", e);
+        }
+        atualizarInterfacePerfilETarifas();
+    }
+
+    function atualizarInterfacePerfilETarifas() {
+        const nomeExibicao = perfilMotorista.nome ? perfilMotorista.nome : "Painel do Motorista";
+        document.getElementById('headerNomeMotorista').innerText = `🚘 ${nomeExibicao}`;
+
+        document.getElementById('cfgNomeMotorista').value = perfilMotorista.nome || "";
+        document.getElementById('cfgTelefoneMotorista').value = perfilMotorista.telefone || "";
+
+        document.getElementById('cfgTaxaBase').value = config.taxaBase;
+        document.getElementById('cfgValorKm').value = config.valorKm;
+        document.getElementById('cfgValorMinuto').value = config.valorMinuto;
+        document.getElementById('cfgValorEspera').value = config.valorEspera;
+        document.getElementById('cfgPrecoGasolina').value = config.precoGasolina;
+        document.getElementById('cfgKmLiter').value = config.kmLiter;
+        document.getElementById('cfgManutencaoHora').value = config.manutencaoHora;
+        document.getElementById('cfgTaxaTerceiro').value = config.taxaTerceiro;
+    }
+
+    async function salvarConfiguracoesNuvem() {
+        const btn = document.getElementById('btnSalvarTarifas');
+        btn.innerText = "⏳ Salvando na nuvem...";
+        btn.disabled = true;
+
+        perfilMotorista.nome = document.getElementById('cfgNomeMotorista').value.trim();
+        perfilMotorista.telefone = document.getElementById('cfgTelefoneMotorista').value.trim();
+
+        config = {
+            taxaBase: Math.max(0, parseFloat(document.getElementById('cfgTaxaBase').value) || 0),
+            valorKm: Math.max(0, parseFloat(document.getElementById('cfgValorKm').value) || 0),
+            valorMinuto: Math.max(0, parseFloat(document.getElementById('cfgValorMinuto').value) || 0),
+            valorEspera: Math.max(0, parseFloat(document.getElementById('cfgValorEspera').value) || 0),
+            precoGasolina: Math.max(0, parseFloat(document.getElementById('cfgPrecoGasolina').value) || 0),
+            kmLiter: Math.max(1, parseFloat(document.getElementById('cfgKmLiter').value) || 1),
+            manutencaoHora: Math.max(0, parseFloat(document.getElementById('cfgManutencaoHora').value) || 0),
+            taxaTerceiro: Math.max(0, parseFloat(document.getElementById('cfgTaxaTerceiro').value) || 0)
+        };
+
+        const { error } = await supabaseClient
+            .from('Motoristas')
+            .upsert({
+                id: utilizadorAtual.id,
+                email: utilizadorAtual.email,
+                nome: perfilMotorista.nome || null,
+                telefone: perfilMotorista.telefone || null,
+                config_tarifas: config
+            });
+
+        btn.innerText = "☁️ Salvar Perfil e Tarifas na Nuvem";
+        btn.disabled = false;
+
+        if (error) alert("Erro ao salvar configurações: " + error.message);
+        else {
+            atualizarInterfacePerfilETarifas();
+            showToast("Perfil e tarifas sincronizados!");
+        }
+    }
+
+    // ==========================================
+    // 5. CÁLCULO DE CORRIDA E ORÇAMENTO COMPLETO
+    // ==========================================
+    function toggleJustificativa() {
+        const dinamica = parseFloat(document.getElementById('dinamica').value) || 1;
+        document.getElementById('boxJustificativa').style.display = dinamica > 1.0 ? 'block' : 'none';
+    }
+
+    function fmtMoney(v) {
+        return (Number(v) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    function calcularEExibir() {
+        const distancia = parseFloat(document.getElementById('distancia').value) || 0;
+        const tempo = parseFloat(document.getElementById('tempo').value) || 0;
+        const tempoEspera = parseFloat(document.getElementById('tempoEspera').value) || 0;
+        const fatorRetorno = parseFloat(document.getElementById('retornoVazio').value) || 0;
+        const dinamica = parseFloat(document.getElementById('dinamica').value) || 1.0;
+        const extras = parseFloat(document.getElementById('extras').value) || 0;
+        const desconto = parseFloat(document.getElementById('desconto').value) || 0;
+        const motivoDinamica = document.getElementById('motivoDinamica').value || 'Condições especiais do trajeto/horário';
+
+        const clienteId = document.getElementById('selectClienteRapido').value || null;
+        const clienteNome = document.getElementById('clienteNome').value.trim();
+        const statusCorrida = document.getElementById('statusCorrida').value;
+        const statusPagamento = document.getElementById('statusPagamento').value;
+
+        const origem = document.getElementById('origem').value.trim();
+        const destino = document.getElementById('destino').value.trim();
+        const dataInput = document.getElementById('dataCorrida').value;
+        const horaInput = document.getElementById('horaCorrida').value;
+
+        if (distancia <= 0 || tempo <= 0) {
+            alert("Por favor, introduza valores válidos e positivos para a distância e o tempo.");
+            return;
+        }
+
+        const kmEfetivo = distancia * (1 + fatorRetorno);
+        const tempoEfetivo = tempo * (1 + fatorRetorno);
+
+        const custoDistancia = kmEfetivo * config.valorKm;
+        const custoTempo = tempoEfetivo * config.valorMinuto;
+        const custoEspera = tempoEspera * config.valorEspera;
+
+        const subtotalBase = config.taxaBase + custoDistancia + custoTempo + custoEspera;
+        const valorComDinamica = subtotalBase * dinamica;
+        const acrescimoDinamica = valorComDinamica - subtotalBase;
+        const valorTerceiro = valorComDinamica * (config.taxaTerceiro / 100);
+
+        let precoFinalCliente = valorComDinamica + valorTerceiro + extras - desconto;
+        if (precoFinalCliente < 0) precoFinalCliente = 0;
+
+        const gastoCombustivel = (kmEfetivo / config.kmLiter) * config.precoGasolina;
+        const gastoManutencao = ((tempoEfetivo + tempoEspera) / 60) * config.manutencaoHora;
+        const custoTotalOperacional = gastoCombustivel + gastoManutencao + valorTerceiro;
+        const lucroLiquidoReal = precoFinalCliente - custoTotalOperacional - extras;
+
+        document.getElementById('resValorTotal').innerText = fmtMoney(precoFinalCliente);
+        let txtResumo = `${distancia} km • ${tempo} min`;
+        if (tempoEspera > 0) txtResumo += ` (+${tempoEspera}m espera)`;
+        if (fatorRetorno > 0) txtResumo += ` (Retorno Incluído)`;
+        document.getElementById('resResumoTrajeto').innerText = txtResumo;
+
+        document.getElementById('statLucro').innerText = fmtMoney(lucroLiquidoReal);
+        document.getElementById('statGasolina').innerText = fmtMoney(gastoCombustivel);
+        document.getElementById('statManutencao').innerText = fmtMoney(gastoManutencao);
+        document.getElementById('statTerceiro').innerText = fmtMoney(valorTerceiro);
+
+        desenharGrafico(lucroLiquidoReal, gastoCombustivel, gastoManutencao, valorTerceiro);
+
+        let dataStr = "A combinar";
+        let isoDataHora = new Date().toISOString();
+        if (dataInput && horaInput) {
+            const p = dataInput.split('-');
+            const d = new Date(p[0], p[1] - 1, p[2]);
+            const dias = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+            dataStr = `${p[2]}/${p[1]}/${p[0]} às ${horaInput} (${dias[d.getDay()]})`;
+            isoDataHora = `${dataInput}T${horaInput}:00`;
+        }
+
+        const nomeAssinatura = perfilMotorista.nome || "Motorista Particular";
+
+        let r = `===============================\n`;
+        r += `🚘 *ORÇAMENTO DE CORRIDA PARTICULAR*\n`;
+        r += `===============================\n`;
+        r += `*Motorista:* ${nomeAssinatura}\n`;
+        if (clienteNome) r += `👤 *Passageiro(a):* ${clienteNome}\n`;
+        r += `📅 *Data/Hora:* ${dataStr}\n\n`;
+
+        if (origem || destino) {
+            r += `📍 *Trajeto:*\n`;
+            if (origem) r += `• Origem: ${origem}\n`;
+            if (destino) r += `• Destino: ${destino}\n\n`;
+        }
+
+        r += `📏 *Estimativa do Percurso:*\n`;
+        r += `• Distância: ${distancia} KM\n`;
+        r += `• Tempo Estimado: ${tempo} Minutos\n`;
+        if (tempoEspera > 0) r += `• Tempo de Espera Incluído: ${tempoEspera} Min\n`;
+        
+        r += `\n💰 *Detalhamento do Valor:*\n`;
+        r += `• Valor da Corrida: ${fmtMoney(subtotalBase + valorTerceiro)}\n`;
+
+        if (dinamica > 1.0) {
+            r += `• Adicional Dinâmico (${dinamica}x): ${fmtMoney(acrescimoDinamica)}\n`;
+            r += `  _(Motivo: ${motivoDinamica})_\n`;
+        }
+
+        if (extras > 0) r += `• Pedágio / Custos Extras: ${fmtMoney(extras)}\n`;
+        if (desconto > 0) r += `• Desconto Especial: -${fmtMoney(desconto)}\n`;
+
+        r += `\n💵 *VALOR TOTAL: ${fmtMoney(precoFinalCliente)}*\n`;
+        r += `===============================\n`;
+        r += `_Agendamento garantido com pontualidade, conforto e segurança._\n`;
+        r += `📲 *${nomeAssinatura}*`;
+
+        textoReciboAtual = r;
+        document.getElementById('receiptText').innerText = r;
+        document.getElementById('resultCard').style.display = 'block';
+
+        ultimaCorridaNuvem = {
+            motorista_id: utilizadorAtual.id,
+            cliente_id: clienteId,
+            cliente_nome: clienteNome || null,
+            origem: origem || 'Não especificada',
+            destino: destino || 'Não especificado',
+            data_hora: isoDataHora,
+            distancia: distancia,
+            tempo: tempo,
+            valor: Number(precoFinalCliente.toFixed(2)),
+            lucro: Number(lucroLiquidoReal.toFixed(2)),
+            combustivel: Number(gastoCombustivel.toFixed(2)),
+            manutencao: Number(gastoManutencao.toFixed(2)),
+            terceiro: Number(valorTerceiro.toFixed(2)),
+            extras: Number(extras.toFixed(2)),
+            desconto: Number(desconto.toFixed(2)),
+            status: statusCorrida,
+            status_pagamento: statusPagamento
+        };
+    }
+
+    // ==========================================
+    // 6. HISTÓRICO, PAGAMENTOS E RELATÓRIOS
+    // ==========================================
+    async function gravarCorridaSistema() {
+        if (!ultimaCorridaNuvem) return;
+        const btn = document.getElementById('btnSalvarNuvem');
+        btn.innerText = "⏳ Salvando na nuvem...";
+        btn.disabled = true;
+
+        // Sincroniza status atuais selecionados antes de gravar
+        ultimaCorridaNuvem.status = document.getElementById('statusCorrida').value;
+        ultimaCorridaNuvem.status_pagamento = document.getElementById('statusPagamento').value;
+
+        const { error } = await supabaseClient
+            .from('Corridas')
+            .insert([ultimaCorridaNuvem]);
+
+        btn.innerText = "💾 Guardar Corrida na Nuvem";
+        btn.disabled = false;
+
+        if (error) {
+            alert("Erro ao salvar na nuvem: " + error.message);
+        } else {
+            showToast("Corrida salva na nuvem com sucesso!");
+            carregarHistoricoSupabase();
+        }
+    }
+
+    async function carregarHistoricoSupabase() {
+        const container = document.getElementById('historicoLista');
+        container.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">Sincronizando com a nuvem...</p>';
+
+        const { data: corridas, error } = await supabaseClient
+            .from('Corridas')
+            .select('*')
+            .order('data_hora', { ascending: false })
+            .limit(500);
+
+        if (error) {
+            container.innerHTML = `<p style="color: var(--red-alert); text-align: center;">Erro: ${error.message}</p>`;
+            return;
+        }
+
+        corridasCacheNuvem = corridas || [];
+        renderizarListaHistorico();
+    }
+
+    function renderizarListaHistorico() {
+        const container = document.getElementById('historicoLista');
+        const filtroPag = document.getElementById('filtroStatusPag').value;
+
+        let totalPago = 0;
+        let totalPendente = 0;
+
+        corridasCacheNuvem.forEach(c => {
+            const val = Number(c.valor) || 0;
+            if (c.status_pagamento === 'pago') totalPago += val;
+            else totalPendente += val;
+        });
+
+        document.getElementById('resumoTotalPago').innerText = fmtMoney(totalPago);
+        document.getElementById('resumoTotalPendente').innerText = fmtMoney(totalPendente);
+
+        let listaExibicao = corridasCacheNuvem;
+        if (filtroPag !== 'todos') {
+            listaExibicao = corridasCacheNuvem.filter(c => (c.status_pagamento || 'pendente') === filtroPag);
+        }
+
+        if (listaExibicao.length === 0) {
+            container.innerHTML = `<p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem; margin-top: 20px;">Nenhuma corrida encontrada para este filtro.</p>`;
+            return;
+        }
+
+        let html = '';
+        listaExibicao.slice(0, 25).forEach(item => {
+            const dataFmt = item.data_hora ? new Date(item.data_hora).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : 'Sem data';
+            const lucroVal = Number(item.lucro) || 0;
+            const isPago = item.status_pagamento === 'pago';
+            const isAgendada = item.status === 'agendada';
+
+            html += `
+                <div style="background: var(--bg-input); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; margin-bottom: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-weight: 800; font-size: 1.05rem; color: var(--accent-gold);">${fmtMoney(item.valor)}</span>
+                        <div style="display: flex; gap: 6px;">
+                            <span class="badge ${isAgendada ? 'badge-agendada' : 'badge-concluida'}">${isAgendada ? '📅 Agendada' : '✅ Concluída'}</span>
+                            <span class="badge ${isPago ? 'badge-pago' : 'badge-pendente'}">${isPago ? '💵 Pago' : '⏳ Pendente'}</span>
+                        </div>
+                    </div>
+                    ${item.cliente_nome ? `<div style="font-size: 0.8rem; color: var(--accent-gold); margin-top: 5px; font-weight: 600;">👤 Cliente: ${item.cliente_nome}</div>` : ''}
+                    <div style="font-size: 0.82rem; color: var(--text-primary); margin-top: 4px;">${item.origem} ➔ ${item.destino}</div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-secondary); margin-top: 4px;">
+                        <span>📅 ${dataFmt} • ${item.distancia || 0} km</span>
+                        <span style="color: ${lucroVal >= 0 ? 'var(--green-success)' : 'var(--red-alert)'}; font-weight: bold;">Lucro: ${fmtMoney(lucroVal)}</span>
+                    </div>
+                    <div style="display: flex; gap: 6px; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--border-color);">
+                        <button class="btn-mini" onclick="alternarPagamentoCorrida('${item.id}', '${isPago ? 'pendente' : 'pago'}')" style="border-color: ${isPago ? 'var(--border-color)' : 'var(--green-success)'}; color: ${isPago ? 'var(--text-secondary)' : 'var(--green-success)'};">
+                            ${isPago ? '↩️ Marcar Pendente' : '✅ Receber (Pago)'}
+                        </button>
+                        <button class="btn-mini" onclick="alternarStatusViagem('${item.id}', '${isAgendada ? 'concluida' : 'agendada'}')">
+                            ${isAgendada ? '🏁 Concluir Viagem' : '📅 Voltar p/ Agenda'}
+                        </button>
+                        <button class="btn-mini" style="border-color: var(--red-alert); color: var(--red-alert); margin-left: auto;" onclick="excluirCorridaNuvem('${item.id}')">🗑️</button>
+                    </div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
+    }
+
+    async function alternarPagamentoCorrida(id, novoStatusPag) {
+        const { error } = await supabaseClient
+            .from('Corridas')
+            .update({ status_pagamento: novoStatusPag })
+            .eq('id', id);
+
+        if (error) alert("Erro ao atualizar pagamento: " + error.message);
+        else {
+            showToast(novoStatusPag === 'pago' ? "Pagamento confirmado!" : "Marcado como pendente!");
+            carregarHistoricoSupabase();
+        }
+    }
+
+    async function alternarStatusViagem(id, novoStatus) {
+        const { error } = await supabaseClient
+            .from('Corridas')
+            .update({ status: novoStatus })
+            .eq('id', id);
+
+        if (error) alert("Erro ao atualizar status: " + error.message);
+        else {
+            showToast("Status da viagem atualizado!");
+            carregarHistoricoSupabase();
+        }
+    }
+
+    async function excluirCorridaNuvem(id) {
+        if (!confirm("Tem certeza que deseja apagar esta corrida do histórico?")) return;
+        const { error } = await supabaseClient.from('Corridas').delete().eq('id', id);
+        if (error) alert("Erro ao excluir: " + error.message);
+        else {
+            showToast("Corrida excluída!");
+            carregarHistoricoSupabase();
+        }
+    }
+
+    function obterCorridasFiltradas() {
+        const filtroDataInput = document.getElementById('filtroDataPDF').value;
+        if (!filtroDataInput) return corridasCacheNuvem;
+
+        return corridasCacheNuvem.filter(item => {
+            if (!item.data_hora) return false;
+            return item.data_hora.startsWith(filtroDataInput);
+        });
+    }
+
+    function exportarPDFReal() {
+        const hist = obterCorridasFiltradas();
+        const filtroDataInput = document.getElementById('filtroDataPDF').value;
+
+        if (hist.length === 0) {
+            showToast("Nenhuma corrida na nuvem para a data selecionada.");
+            return;
+        }
+
+        const btn = document.getElementById('btnPdf');
+        btn.innerText = "⏳ Gerando Documento...";
+        btn.disabled = true;
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('p', 'mm', 'a4');
+
+        let totalBruto = 0, totalLucro = 0, totalGas = 0, totalManut = 0, totalTerc = 0;
+
+        const tableBody = hist.map(item => {
+            const valor = Number(item.valor) || 0;
+            const lucro = Number(item.lucro) || 0;
+            const gas = Number(item.combustivel) || 0;
+            const manut = Number(item.manutencao) || 0;
+            const terc = Number(item.terceiro) || 0;
+
+            totalBruto += valor;
+            totalLucro += lucro;
+            totalGas += gas;
+            totalManut += manut;
+            totalTerc += terc;
+
+            const clienteTxt = item.cliente_nome ? `[${item.cliente_nome}]\n` : '';
+            const trajeto = `${clienteTxt}${item.origem} ➔ ${item.destino}`;
+            const distTempo = `${item.distancia || 0} km\n${item.tempo || 0} min`;
+            const statusPag = item.status_pagamento === 'pago' ? 'PAGO' : 'PENDENTE';
+            const custosDetalhados = `Gas: ${fmtMoney(gas)}\nMan: ${fmtMoney(manut)}\nPag: ${statusPag}`;
+            const dataCurta = item.data_hora ? new Date(item.data_hora).toLocaleDateString('pt-BR') : '--';
+
+            return [dataCurta, trajeto, distTempo, custosDetalhados, fmtMoney(valor), fmtMoney(lucro)];
+        });
+
+        const nomeMotoristaStr = perfilMotorista.nome || utilizadorAtual.email;
+
+        doc.setFontSize(16);
+        doc.setTextColor(245, 158, 11);
+        doc.text(`Relatório Financeiro - ${nomeMotoristaStr}`, 14, 20);
+
+        doc.setFontSize(10);
+        doc.setTextColor(100, 100, 100);
+        const periodoStr = filtroDataInput ? `Data Filtrada: ${filtroDataInput.split('-').reverse().join('/')}` : "Período: Todo o Histórico da Nuvem";
+        doc.text(`${periodoStr} | Gerado em: ${new Date().toLocaleString('pt-BR')}`, 14, 26);
+
+        doc.setFillColor(245, 245, 245);
+        doc.rect(14, 32, 182, 25, 'F');
+
+        doc.setFontSize(11);
+        doc.setTextColor(50, 50, 50);
+        doc.text("Faturamento Bruto", 20, 42);
+        doc.setFontSize(14);
+        doc.setTextColor(18, 18, 20);
+        doc.setFont("helvetica", "bold");
+        doc.text(fmtMoney(totalBruto), 20, 50);
+
+        doc.setFontSize(11);
+        doc.setTextColor(50, 50, 50);
+        doc.setFont("helvetica", "normal");
+        doc.text("Custos Operacionais", 85, 42);
+        doc.setFontSize(14);
+        doc.setTextColor(239, 68, 68);
+        doc.setFont("helvetica", "bold");
+        doc.text(fmtMoney(totalGas + totalManut + totalTerc), 85, 50);
+
+        doc.setFontSize(11);
+        doc.setTextColor(50, 50, 50);
+        doc.setFont("helvetica", "normal");
+        doc.text("Lucro Líquido Real", 150, 42);
+        doc.setFontSize(14);
+        doc.setTextColor(16, 185, 129);
+        doc.setFont("helvetica", "bold");
+        doc.text(fmtMoney(totalLucro), 150, 50);
+
+        doc.autoTable({
+            startY: 65,
+            head: [['Data', 'Cliente / Trajeto', 'Dist/Tempo', 'Custos / Status', 'Valor Bruto', 'Lucro Real']],
+            body: tableBody,
+            theme: 'grid',
+            headStyles: { fillColor: [18, 18, 20], textColor: [255, 255, 255], fontStyle: 'bold' },
+            styles: { fontSize: 8, cellPadding: 3, valign: 'middle' },
+            columnStyles: {
+                0: { cellWidth: 20 },
+                1: { cellWidth: 50 },
+                2: { cellWidth: 20, halign: 'center' },
+                3: { cellWidth: 35 },
+                4: { cellWidth: 28, halign: 'right', fontStyle: 'bold' },
+                5: { cellWidth: 25, halign: 'right', fontStyle: 'bold', textColor: [16, 185, 129] }
+            },
+            alternateRowStyles: { fillColor: [250, 250, 250] },
+            margin: { top: 15, left: 14, right: 14 }
+        });
+
+        doc.save(`Relatorio_Corridas_${filtroDataInput || 'Completo'}.pdf`);
+        btn.innerHTML = "📄 Gerar Relatório Financeiro (PDF)";
+        btn.disabled = false;
+        showToast("Relatório baixado com sucesso!");
+    }
+
+    function exportarCSV() {
+        if (corridasCacheNuvem.length === 0) {
+            showToast("Não há dados na nuvem para exportar.");
+            return;
+        }
+        
+        let csv = "\uFEFFData;Cliente;Origem;Destino;Status Viagem;Status Pagamento;Distancia;Tempo;Lucro Liquido;Valor Final\n";
+        corridasCacheNuvem.forEach(item => {
+            const dataFmt = item.data_hora ? new Date(item.data_hora).toLocaleString('pt-BR') : '';
+            const lucroFmt = (Number(item.lucro) || 0).toFixed(2).replace('.', ',');
+            const valorFmt = (Number(item.valor) || 0).toFixed(2).replace('.', ',');
+            
+            csv += `"${dataFmt}";"${item.cliente_nome || 'Avulso'}";"${item.origem}";"${item.destino}";"${item.status || ''}";"${item.status_pagamento || ''}";"${item.distancia || 0}";"${item.tempo || 0}";"${lucroFmt}";"${valorFmt}"\n`;
+        });
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "historico_corridas_nuvem.csv";
+        link.click();
+    }
+
+    // ==========================================
+    // 7. GRÁFICO, ROTAS E WHATSAPP
+    // ==========================================
+    function desenharGrafico(lucro, gas, manut, terceiro) {
+        const canvas = document.getElementById('lucroChart');
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const lucroVisual = lucro > 0 ? lucro : 0;
+        const total = lucroVisual + gas + manut + terceiro;
+        if (total <= 0) return;
+
+        const data = [
+            { val: lucroVisual, color: '#10B981' },
+            { val: gas, color: '#F87171' },
+            { val: manut, color: '#FBBF24' },
+            { val: terceiro, color: '#60A5FA' }
+        ];
+
+        let startAngle = -0.5 * Math.PI;
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const radius = Math.min(centerX, centerY) - 15;
+
+        data.forEach(slice => {
+            if (slice.val <= 0) return;
+            const sliceAngle = (slice.val / total) * 2 * Math.PI;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, startAngle, startAngle + sliceAngle);
+            ctx.arc(centerX, centerY, radius - 28, startAngle + sliceAngle, startAngle, true);
+            ctx.closePath();
+            ctx.fillStyle = slice.color;
+            ctx.fill();
+            startAngle += sliceAngle;
+        });
+
+        ctx.fillStyle = '#F3F3F5';
+        ctx.font = 'bold 12px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('Divisão', centerX, centerY - 8);
+
+        ctx.fillStyle = lucro > 0 ? '#10B981' : '#EF4444';
+        ctx.font = 'bold 13px sans-serif';
+        const pctLucro = lucro > 0 ? Math.round((lucro / total) * 100) : 0;
+        ctx.fillText(lucro > 0 ? `${pctLucro}% Lucro` : 'Prejuízo', centerX, centerY + 10);
+    }
+
+    function enviarWhatsApp() {
+        if (!textoReciboAtual) return;
+        let telRaw = document.getElementById('clienteTel').value.trim();
+        let telLimpo = telRaw.replace(/\D/g, '');
+        if (telLimpo.length >= 10 && telLimpo.length <= 11 && !telRaw.startsWith('+')) {
+            telLimpo = '55' + telLimpo;
+        }
+        const encoded = encodeURIComponent(textoReciboAtual);
+        const url = telLimpo ? `https://wa.me/${telLimpo}?text=${encoded}` : `https://api.whatsapp.com/send?text=${encoded}`;
+        window.open(url, '_blank');
+    }
+
+    function copiarTexto() {
+        if (!textoReciboAtual) return;
+        navigator.clipboard.writeText(textoReciboAtual).then(() => {
+            showToast("Orçamento copiado!");
+        });
+    }
+
+    async function calcularRotaOSM() {
+        const origem = document.getElementById('origem').value.trim();
+        const destino = document.getElementById('destino').value.trim();
+        const btn = document.getElementById('btnRota');
+
+        if (!origem || !destino) {
+            alert("Por favor, preencha os campos Origem e Destino primeiro.");
+            return;
+        }
+
+        btn.innerText = "⏳ A calcular rota...";
+        btn.disabled = true;
+
+        try {
+            const resOrigem = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(origem)}`);
+            const dataOrigem = await resOrigem.json();
+            if (dataOrigem.length === 0) throw new Error("Endereço de origem não encontrado.");
+
+            const resDestino = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(destino)}`);
+            const dataDestino = await resDestino.json();
+            if (dataDestino.length === 0) throw new Error("Endereço de destino não encontrado.");
+
+            const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${dataOrigem[0].lon},${dataOrigem[0].lat};${dataDestino[0].lon},${dataDestino[0].lat}?overview=false`;
+            const resRota = await fetch(osrmUrl);
+            const dataRota = await resRota.json();
+
+            if (dataRota.code !== "Ok") throw new Error("Não foi possível traçar a rota rodoviária.");
+
+            document.getElementById('distancia').value = (dRotaDist(dataRota.routes[0].distance));
+            document.getElementById('tempo').value = Math.ceil(dataRota.routes[0].duration / 60);
+            showToast("Distância e tempo preenchidos!");
+        } catch (erro) {
+            alert("Erro: " + erro.message);
+        } finally {
+            btn.innerText = "📍 Calcular Distância e Tempo Automaticamente";
+            btn.disabled = false;
+        }
+    }
+
+    function dRotaDist(meters) {
+        return (meters / 1000).toFixed(1);
+    }
+
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.innerText = msg;
+        t.style.display = 'block';
+        setTimeout(() => t.style.display = 'none', 3000);
+    }
+</script>
+</body>
+</html>
