@@ -533,8 +533,9 @@
         alternarCarregamentoAuth(true);
         try {
             const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-            if (error) alert("Erro: " + error.message);
-            else if (data && data.user) {
+            if (error) {
+                alert("Erro ao entrar: " + error.message);
+            } else if (data && data.user) {
                 utilizadorAtual = data.user;
                 verificarAssinaturaEMostrarApp();
             }
@@ -552,14 +553,23 @@
 
         alternarCarregamentoAuth(true);
         try {
-            const { data, error } = await supabaseClient.auth.signUp({ email, password });
-            if (error) alert("Erro ao criar conta: " + error.message);
-            else {
-                alert("Conta criada! Você ganhou 7 dias gratuitos.");
-                if (data && data.user) {
-                    utilizadorAtual = data.user;
-                    verificarAssinaturaEMostrarApp();
+            // Cria a conta sem logar automaticamente por cima da sessão antiga
+            const { data, error } = await supabaseClient.auth.signUp({ 
+                email, 
+                password,
+                options: {
+                    emailRedirectTo: window.location.href // Evita erro de redirecionamento para localhost
                 }
+            });
+
+            if (error) {
+                alert("Erro ao criar conta: " + error.message);
+            } else {
+                alert("Conta criada com sucesso! Você ganhou 7 dias gratuitos. Agora faça o login com seus dados.");
+                // Desconecta qualquer sessão pendente para obrigar o login limpo
+                await supabaseClient.auth.signOut();
+                document.getElementById('authEmail').value = "";
+                document.getElementById('authSenha').value = "";
             }
         } catch (err) {
             alert("Erro de conexão.");
