@@ -21,10 +21,17 @@
 
     <style>
         :root {
-            --bg-body: #121214; --bg-card: #1E1E22; --bg-input: #121214;
-            --border-color: #2D2D33; --text-primary: #F3F3F5; --text-secondary: #8E8E9A;
-            --accent-gold: #F59E0B; --accent-gold-hover: #D97706;
-            --green-success: #10B981; --red-alert: #EF4444; --blue-info: #3B82F6;
+            --bg-body: #121214;
+            --bg-card: #1E1E22;
+            --bg-input: #121214;
+            --border-color: #2D2D33;
+            --text-primary: #F3F3F5;
+            --text-secondary: #8E8E9A;
+            --accent-gold: #F59E0B;
+            --accent-gold-hover: #D97706;
+            --green-success: #10B981;
+            --red-alert: #EF4444;
+            --blue-info: #3B82F6;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -202,7 +209,7 @@
         </p>
         
         <div style="background: var(--bg-card); padding: 14px; border-radius: 10px; margin: 16px 0; border: 1px solid var(--border-color); text-align: left;">
-            <div style="font-size: 0.75rem; color: var(--text-secondary);">CHAVE PIX (UUID):</div>
+            <div style="font-size: 0.75rem; color: var(--text-secondary);">CHAVE PIX (CNPJ / UUID):</div>
             <div style="color: var(--accent-gold); font-family: monospace; font-size: 0.82rem; word-break: break-all; margin: 4px 0 10px 0; user-select: all;" id="pixChaveTexto">3f1860ee-b11c-4cef-a726-a2429a56999e</div>
             <button class="btn-mini" style="width: 100%; justify-content: center; background: var(--accent-gold); color: #121214; font-weight: bold;" onclick="copiarPix()">📋 Copiar Chave PIX</button>
         </div>
@@ -451,10 +458,10 @@
         document.getElementById('dataCorrida').value = agora.toISOString().split('T')[0];
         document.getElementById('horaCorrida').value = agora.toTimeString().substring(0, 5);
 
-        supabaseClient.auth.onAuthStateChange(async (event, session) => {
+        supabaseClient.auth.onAuthStateChange((event, session) => {
             if (session && session.user) {
                 utilizadorAtual = session.user;
-                await verificarAssinaturaEMostrarApp();
+                verificarAssinaturaEMostrarApp();
             } else if (event === 'SIGNED_OUT') {
                 utilizadorAtual = null;
                 document.getElementById('main-app').style.display = 'none';
@@ -468,7 +475,7 @@
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (session && session.user) {
                 utilizadorAtual = session.user;
-                await verificarAssinaturaEMostrarApp();
+                verificarAssinaturaEMostrarApp();
             } else {
                 document.getElementById('auth-container').style.display = 'flex';
             }
@@ -478,7 +485,6 @@
     };
 
     async function verificarAssinaturaEMostrarApp() {
-        if (!utilizadorAtual) return;
         try {
             const { data, error } = await supabaseClient
                 .from('Motoristas')
@@ -499,6 +505,7 @@
                     return;
                 }
 
+                // Exibe modal de boas-vindas se for novo usuário (onboarding não visto)
                 if (data.onboarding_visto === false) {
                     document.getElementById('onboarding-modal').style.display = 'flex';
                 }
@@ -507,7 +514,7 @@
             console.error("Erro na verificação:", e);
         }
 
-        await mostrarAplicacao();
+        mostrarAplicacao();
     }
 
     async function fecharOnboarding() {
@@ -526,11 +533,10 @@
         alternarCarregamentoAuth(true);
         try {
             const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-            if (error) {
-                alert("Erro ao entrar: " + error.message);
-            } else if (data && data.user) {
+            if (error) alert("Erro: " + error.message);
+            else if (data && data.user) {
                 utilizadorAtual = data.user;
-                await verificarAssinaturaEMostrarApp();
+                verificarAssinaturaEMostrarApp();
             }
         } catch (err) {
             alert("Erro de conexão.");
@@ -541,45 +547,34 @@
 
     async function realizarRegisto() {
         const email = document.getElementById('authEmail').value.trim();
-        const password = document.getElementById('authSenha'].value || document.getElementById('authSenha').value;
+        const password = document.getElementById('authSenha').value;
         if (!email || !password) { alert("Preencha e-mail e senha."); return; }
 
         alternarCarregamentoAuth(true);
         try {
-            // Desconecta qualquer sessão anterior para evitar conflito de cache
-            await supabaseClient.auth.signOut();
-
             const { data, error } = await supabaseClient.auth.signUp({ email, password });
-            if (error) {
-                alert("Erro ao criar conta: " + error.message);
-            } else {
-                alert("Conta criada com sucesso! Você ganhou 7 dias gratuitos.");
+            if (error) alert("Erro ao criar conta: " + error.message);
+            else {
+                alert("Conta criada! Você ganhou 7 dias gratuitos.");
                 if (data && data.user) {
                     utilizadorAtual = data.user;
-                    await verificarAssinaturaEMostrarApp();
+                    verificarAssinaturaEMostrarApp();
                 }
             }
         } catch (err) {
-            alert("Erro de conexão: " + err.message);
+            alert("Erro de conexão.");
         } finally {
             alternarCarregamentoAuth(false);
         }
     }
 
-    async function fazerLogout() { 
-        await supabaseClient.auth.signOut();
-        utilizadorAtual = null;
-        document.getElementById('main-app').style.display = 'none';
-        document.getElementById('paywall-container').style.display = 'none';
-        document.getElementById('onboarding-modal').style.display = 'none';
-        document.getElementById('auth-container').style.display = 'flex';
-    }
+    async function fazerLogout() { await supabaseClient.auth.signOut(); }
 
     async function mostrarAplicacao() {
         document.getElementById('auth-container').style.display = 'none';
         document.getElementById('paywall-container').style.display = 'none';
-        document.getElementById('userEmailDisplay').innerText = utilizadorAtual.email;
         document.getElementById('main-app').style.display = 'flex';
+        document.getElementById('userEmailDisplay').innerText = utilizadorAtual.email;
         
         await Promise.all([
             carregarPerfilETarifasNuvem(),
@@ -850,15 +845,7 @@
 
     async function carregarHistoricoSupabase() {
         const container = document.getElementById('historicoLista');
-        if (!utilizadorAtual) return;
-        
-        const { data, error } = await supabaseClient
-            .from('Corridas')
-            .select('*')
-            .eq('motorista_id', utilizadorAtual.id)
-            .order('data_hora', { ascending: false })
-            .limit(500);
-
+        const { data, error } = await supabaseClient.from('Corridas').select('*').order('data_hora', { ascending: false }).limit(500);
         if (error) return;
         corridasCacheNuvem = data || [];
         renderizarListaHistorico();
