@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#121214">
+    <!-- Meta tags para PWA -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -12,7 +13,7 @@
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon-192.jpg">
     
-    <!-- Bibliotecas PDF -->
+    <!-- Bibliotecas para Geração de PDF REAL -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     
@@ -20,7 +21,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
-        /* As suas variáveis e estilos originais mantêm-se intactos */
         :root {
             --bg-body: #121214; --bg-card: #1E1E22; --bg-input: #121214;
             --border-color: #2D2D33; --text-primary: #F3F3F5; --text-secondary: #8E8E9A;
@@ -32,8 +32,8 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-body); color: var(--text-primary);
-            margin: 0; padding: 0; display: flex; justify-content: center; min-height: 100vh;
+            background-color: var(--bg-body); color: var(--text-primary); margin: 0; padding: 0;
+            display: flex; justify-content: center; min-height: 100vh;
         }
 
         .app-container {
@@ -42,6 +42,9 @@
             box-shadow: 0 0 20px rgba(0,0,0,0.8);
         }
 
+        /* Ecrã de Auth */
+        #auth-screen { background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin: auto; max-width: 90%; width: 100%; }
+
         header {
             background: rgba(30, 30, 34, 0.95); backdrop-filter: blur(10px);
             padding: 16px 20px; border-bottom: 1px solid var(--border-color);
@@ -49,7 +52,7 @@
             justify-content: space-between; align-items: center;
         }
 
-        header h1 { margin: 0; font-size: 1.15rem; color: var(--accent-gold); font-weight: 700; display: flex; align-items: center; gap: 8px;}
+        header h1 { margin: 0; font-size: 1.15rem; color: var(--accent-gold); font-weight: 700; }
         header p { margin: 2px 0 0 0; font-size: 0.75rem; color: var(--text-secondary); }
 
         .tab-nav { display: flex; background: var(--bg-body); border-bottom: 1px solid var(--border-color); }
@@ -65,23 +68,35 @@
         .form-group { margin-bottom: 12px; }
         .form-group.full { grid-column: span 2; }
         label { display: block; font-size: 0.8rem; color: var(--text-primary); margin-bottom: 5px; font-weight: 500; }
-        input, select { width: 100%; padding: 12px; background-color: var(--bg-input); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 0.95rem; outline: none; transition: border-color 0.2s; }
+        input, select { width: 100%; padding: 12px; background-color: var(--bg-input); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 0.95rem; outline: none; }
         input:focus, select:focus { border-color: var(--accent-gold); }
         input[type="date"], input[type="time"] { color-scheme: dark; }
 
         .btn { width: 100%; padding: 14px; border-radius: 8px; border: none; font-size: 0.95rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; margin-top: 10px; }
         .btn-primary { background-color: var(--accent-gold); color: #121214; }
-        .btn-primary:active { background-color: var(--accent-gold-hover); transform: scale(0.98); }
+        .btn-primary:active { transform: scale(0.98); }
         .btn-whatsapp { background-color: #25D366; color: #ffffff; }
+        .btn-pdf { background-color: #3B82F6; color: #ffffff; }
         .btn-secondary { background-color: transparent; border: 1px solid var(--border-color); color: var(--text-primary); }
-        .btn-danger { background-color: transparent; border: 1px solid var(--red-alert); color: var(--red-alert); }
 
-        .result-card, #auth-screen { background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; margin-top: 20px; }
-        #auth-screen { margin: auto; max-width: 90%; }
-        
+        .result-card { background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; margin-top: 20px; display: none; }
         .price-display { text-align: center; padding-bottom: 12px; border-bottom: 1px dashed var(--border-color); }
         .price-label { font-size: 0.8rem; color: var(--text-secondary); }
         .price-value { font-size: 2.2rem; font-weight: 800; color: var(--green-success); margin: 4px 0; }
+
+        .financial-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 14px 0; }
+        .stat-item { background: var(--bg-card); padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); }
+        .stat-item .title { font-size: 0.7rem; color: var(--text-secondary); }
+        .stat-item .val { font-size: 0.95rem; font-weight: 700; margin-top: 2px; }
+        .stat-item.profit .val { color: var(--green-success); }
+        .stat-item.fuel .val { color: #F87171; }
+        .stat-item.maint .val { color: #FBBF24; }
+        .stat-item.third .val { color: #60A5FA; }
+
+        .chart-box { position: relative; width: 100%; height: 180px; margin: 15px 0; display: flex; justify-content: center; align-items: center; }
+        canvas { max-width: 100%; max-height: 100%; }
+
+        .receipt-preview { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; font-family: monospace; font-size: 0.8rem; color: #D4D4D8; white-space: pre-wrap; margin-top: 12px; max-height: 180px; overflow-y: auto; }
 
         .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--green-success); color: #fff; padding: 10px 20px; border-radius: 30px; font-size: 0.85rem; font-weight: 600; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.4); z-index: 200; }
         
@@ -91,11 +106,11 @@
 </head>
 <body>
 
-<!-- ECRÃ DE AUTENTICAÇÃO (NOVO) -->
+<!-- ECRÃ DE AUTENTICAÇÃO -->
 <div id="auth-container" class="app-container" style="justify-content: center;">
     <div id="auth-screen">
-        <h2 style="text-align: center; color: var(--accent-gold); margin-top:0;">Acesso ao Sistema</h2>
-        <p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem;">Inicie sessão para gerir as suas corridas</p>
+        <h2 style="text-align: center; color: var(--accent-gold); margin-top:0;">Calculadora PRO</h2>
+        <p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem;">Inicie sessão para gerir o seu sistema</p>
         
         <div class="form-group">
             <label>E-mail</label>
@@ -112,14 +127,14 @@
     </div>
 </div>
 
-<!-- APLICAÇÃO PRINCIPAL (Fica oculta até fazer login) -->
+<!-- APLICAÇÃO PRINCIPAL -->
 <div id="main-app" class="app-container" style="display: none;">
     <header>
         <div>
             <h1>🚘 Painel do Motorista</h1>
             <p id="userEmailDisplay">Calculadora PRO & Gestão</p>
         </div>
-        <button onclick="fazerLogout()" style="background: none; border: none; color: var(--red-alert); cursor: pointer; font-weight: bold;">Sair</button>
+        <button onclick="fazerLogout()" style="background: none; border: none; color: var(--red-alert); cursor: pointer; font-weight: bold; font-size: 0.85rem;">Sair</button>
     </header>
 
     <nav class="tab-nav">
@@ -129,69 +144,121 @@
     </nav>
 
     <main>
-        <!-- ABA 1: CALCULADORA -->
+        <!-- ABA 1: CALCULADORA COMPLETA -->
         <div id="tab-calculadora" class="tab-content active">
-            <!-- Os seus campos originais de formulário mantêm-se aqui -->
-            <div class="form-grid">
-                <div class="form-group">
-                    <label>Origem</label>
-                    <input type="text" id="origem" placeholder="Ex: Aeroporto">
-                </div>
-                <div class="form-group">
-                    <label>Destino</label>
-                    <input type="text" id="destino" placeholder="Ex: Hotel Centro">
-                </div>
+            <div class="section-title">Dados e Agenda</div>
+            <div class="form-group full">
+                <label>WhatsApp do Cliente</label>
+                <input type="tel" id="clienteTel" placeholder="Ex: 87999998888">
             </div>
             
             <div class="form-grid">
+                <div class="form-group"><label>Data</label><input type="date" id="dataCorrida"></div>
+                <div class="form-group"><label>Horário</label><input type="time" id="horaCorrida"></div>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group"><label>Origem</label><input type="text" id="origem" placeholder="Ex: Aeroporto"></div>
+                <div class="form-group"><label>Destino</label><input type="text" id="destino" placeholder="Ex: Hotel Centro"></div>
+            </div>
+            
+            <div class="form-group full">
+                <button type="button" class="btn btn-secondary" id="btnRota" onclick="calcularRotaOSM()" style="font-size: 0.85rem; padding: 10px; border-style: dashed;">
+                    📍 Calcular Distância e Tempo Automaticamente
+                </button>
+            </div>
+
+            <div class="section-title">Parâmetros do Trajeto</div>
+            <div class="form-grid">
+                <div class="form-group"><label>Distância (KM)</label><input type="number" id="distancia" step="0.1" min="0"></div>
+                <div class="form-group"><label>Tempo (Min)</label><input type="number" id="tempo" min="0"></div>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group"><label>Espera (Min)</label><input type="number" id="tempoEspera" value="0" min="0"></div>
                 <div class="form-group">
-                    <label>Distância (KM)</label>
-                    <input type="number" id="distancia" placeholder="Ex: 25.5" step="0.1">
+                    <label>Cobrar Retorno?</label>
+                    <select id="retornoVazio">
+                        <option value="0">Não (Só ida)</option>
+                        <option value="0.5">Sim (+50%)</option>
+                        <option value="1.0">Sim (100%)</option>
+                    </select>
                 </div>
-                <div class="form-group">
-                    <label>Tempo Estimado (Min)</label>
-                    <input type="number" id="tempo" placeholder="Ex: 35">
-                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group"><label>Dinâmica</label><input type="number" id="dinamica" value="1.0" step="0.1" min="1.0"></div>
+                <div class="form-group"><label>Desconto (R$)</label><input type="number" id="desconto" value="0.00" step="0.50" min="0"></div>
+            </div>
+            
+            <div class="form-group full">
+                <label>Pedágios / Extras (R$)</label>
+                <input type="number" id="extras" value="0.00" step="0.50" min="0">
             </div>
 
             <button class="btn btn-primary" onclick="calcularEExibir()">Calcular Preço & Análise</button>
 
-            <!-- RESULTADO -->
-            <div class="result-card" id="resultCard" style="display: none;">
+            <!-- CARD DE RESULTADO -->
+            <div class="result-card" id="resultCard">
                 <div class="price-display">
-                    <div class="price-label">Valor Sugerido ao Cliente</div>
+                    <div class="price-label">Valor Sugerido</div>
                     <div class="price-value" id="resValorTotal">R$ 0,00</div>
+                    <div style="font-size: 0.8rem; color: var(--text-secondary);" id="resResumoTrajeto">--</div>
                 </div>
-                <button class="btn btn-whatsapp" onclick="gravarCorridaSupabase()">💾 Guardar Corrida no Sistema</button>
+
+                <div class="section-title">Análise de Lucro</div>
+                <div class="financial-stats">
+                    <div class="stat-item profit"><div class="title">Lucro Líquido</div><div class="val" id="statLucro">R$ 0,00</div></div>
+                    <div class="stat-item fuel"><div class="title">Combustível</div><div class="val" id="statGasolina">R$ 0,00</div></div>
+                    <div class="stat-item maint"><div class="title">Manutenção</div><div class="val" id="statManutencao">R$ 0,00</div></div>
+                    <div class="stat-item third"><div class="title">Terceiro</div><div class="val" id="statTerceiro">R$ 0,00</div></div>
+                </div>
+
+                <div class="chart-box"><canvas id="lucroChart" width="220" height="180"></canvas></div>
+
+                <div class="section-title">Prévia da Mensagem</div>
+                <div class="receipt-preview" id="receiptText"></div>
+
+                <button class="btn btn-whatsapp" onclick="enviarWhatsApp()">📲 Enviar WhatsApp</button>
+                <button class="btn btn-secondary" onclick="copiarTexto()">📋 Copiar Texto</button>
+                <button class="btn btn-primary" id="btnSalvarNuvem" onclick="gravarCorridaSistema()" style="margin-top: 15px;">💾 Guardar no Histórico</button>
             </div>
         </div>
 
-        <!-- ABA 2: TARIFAS -->
+        <!-- ABA 2: TARIFAS E CUSTOS COMPLETOS -->
         <div id="tab-tarifas" class="tab-content">
-            <div class="section-title">Base de Preço da Corrida</div>
+            <div class="section-title">Base de Preço</div>
             <div class="form-grid">
-                <div class="form-group">
-                    <label>Taxa Base (R$)</label>
-                    <input type="number" id="cfgTaxaBase" step="0.50">
-                </div>
-                <div class="form-group">
-                    <label>Valor por KM (R$)</label>
-                    <input type="number" id="cfgValorKm" step="0.10">
-                </div>
-                <div class="form-group">
-                    <label>Valor por Minuto (R$)</label>
-                    <input type="number" id="cfgValorMinuto" step="0.05">
-                </div>
+                <div class="form-group"><label>Taxa Base (R$)</label><input type="number" id="cfgTaxaBase" step="0.50"></div>
+                <div class="form-group"><label>Valor por KM (R$)</label><input type="number" id="cfgValorKm" step="0.10"></div>
+                <div class="form-group"><label>Valor Minuto (R$)</label><input type="number" id="cfgValorMinuto" step="0.05"></div>
+                <div class="form-group"><label>Minuto Espera (R$)</label><input type="number" id="cfgValorEspera" step="0.05"></div>
             </div>
-            <button class="btn btn-primary" onclick="salvarConfiguracoes()">💾 Salvar Tarifas</button>
+
+            <div class="section-title">Custos do Veículo (Para Lucro)</div>
+            <div class="form-grid">
+                <div class="form-group"><label>Combustível (R$/L)</label><input type="number" id="cfgPrecoGasolina" step="0.10"></div>
+                <div class="form-group"><label>Autonomia (KM/L)</label><input type="number" id="cfgKmLiter" step="0.5"></div>
+                <div class="form-group"><label>Manut/Hora (R$)</label><input type="number" id="cfgManutencaoHora" step="1.00"></div>
+                <div class="form-group"><label>Taxa Terceiro (%)</label><input type="number" id="cfgTaxaTerceiro" step="1" max="100"></div>
+            </div>
+
+            <button class="btn btn-primary" onclick="salvarConfiguracoes()">💾 Guardar Tarifas</button>
         </div>
 
-        <!-- ABA 3: HISTÓRICO (AGORA VINDO DO SUPABASE) -->
+        <!-- ABA 3: HISTÓRICO HÍBRIDO -->
         <div id="tab-historico" class="tab-content">
-            <div class="section-title">As suas Corridas Guardadas (Supabase)</div>
-            <button class="btn btn-secondary" onclick="carregarHistoricoSupabase()" style="margin-bottom: 10px;">🔄 Atualizar Nuvem</button>
-            <div id="historicoLista">
-                <p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem;">A carregar...</p>
+            <div class="section-title">Corridas Sincronizadas</div>
+            <button class="btn btn-secondary" onclick="carregarHistoricoSupabase()" style="margin-bottom: 15px; padding: 8px;">🔄 Atualizar Nuvem</button>
+            
+            <div id="historicoLista"></div>
+            
+            <div style="background: var(--bg-input); padding: 12px; border-radius: 8px; margin-top: 20px; border: 1px solid var(--border-color);">
+                <div class="section-title" style="margin-top: 0;">Relatórios Avançados</div>
+                <label style="font-size: 0.75rem; margin-bottom: 8px;">Filtro (Deixe em branco para tudo):</label>
+                <input type="date" id="filtroDataPDF" style="margin-bottom: 10px;">
+                <button class="btn btn-pdf" id="btnPdf" onclick="exportarPDFReal()">📄 Gerar PDF Financeiro</button>
+                <button class="btn btn-secondary" onclick="exportarCSV()" style="margin-top: 10px;">📊 Exportar CSV</button>
             </div>
         </div>
     </main>
@@ -203,12 +270,16 @@
     // ==========================================
     // 1. CONFIGURAÇÃO SUPABASE
     // ==========================================
-   const SUPABASE_URL = 'https://hkndnvjdvzwztkwbvkls.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhrbmRudmpkdnp3enRrd2J2a2xzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE5MDE2OTYsImV4cCI6MjEwNzQ3NzY5Nn0.aZv-T9CmfilJs6tGO43HYtGlcGqcFnOjAj7zt7d4PCI';    
-    // CORREÇÃO: O nome foi alterado para supabaseClient para não dar conflito com a biblioteca
+    const SUPABASE_URL = 'COLE_AQUI_A_SUA_PROJECT_URL';
+    const SUPABASE_ANON_KEY = 'COLE_AQUI_A_SUA_API_KEY';
+    
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     let utilizadorAtual = null;
-    let ultimaCorridaCalculada = null; 
+    
+    // Variáveis temporárias para guardar
+    let ultimaCorridaBasica = null; // Vai para a Nuvem
+    let ultimaCorridaCompleta = null; // Vai para o LocalStorage (PDF)
+    let textoReciboAtual = "";
 
     // ==========================================
     // 2. AUTENTICAÇÃO E SESSÃO
@@ -216,6 +287,11 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
     window.onload = async function() {
         carregarConfiguracoes();
         
+        const agora = new Date();
+        document.getElementById('dataCorrida').value = agora.toISOString().split('T')[0];
+        document.getElementById('horaCorrida').value = agora.toTimeString().substring(0, 5);
+        document.getElementById('filtroDataPDF').value = agora.toISOString().split('T')[0];
+
         const { data: { session } } = await supabaseClient.auth.getSession();
         
         if (session) {
@@ -240,32 +316,23 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
     async function realizarLogin() {
         const email = document.getElementById('authEmail').value;
         const password = document.getElementById('authSenha').value;
-        
         alternarCarregamentoAuth(true);
-        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+        const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
         alternarCarregamentoAuth(false);
-
         if (error) alert("Erro de acesso: " + error.message);
     }
 
     async function realizarRegisto() {
         const email = document.getElementById('authEmail').value;
         const password = document.getElementById('authSenha').value;
-        
         alternarCarregamentoAuth(true);
-        const { data, error } = await supabaseClient.auth.signUp({ email, password });
+        const { error } = await supabaseClient.auth.signUp({ email, password });
         alternarCarregamentoAuth(false);
-
-        if (error) {
-            alert("Erro ao criar conta: " + error.message);
-        } else {
-            alert("Conta criada com sucesso! Pode entrar.");
-        }
+        if (error) alert("Erro ao criar conta: " + error.message);
+        else alert("Conta criada! Pode entrar.");
     }
 
-    async function fazerLogout() {
-        await supabaseClient.auth.signOut();
-    }
+    async function fazerLogout() { await supabaseClient.auth.signOut(); }
 
     function mostrarAplicacao() {
         document.getElementById('auth-container').style.display = 'none';
@@ -281,9 +348,9 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
     }
 
     // ==========================================
-    // 3. LÓGICA DA APLICAÇÃO E INTEGRAÇÃO DB
+    // 3. LÓGICA DE CÁLCULO E UI
     // ==========================================
-    const DEFAULT_CONFIG = { taxaBase: 5.00, valorKm: 2.20, valorMinuto: 0.35 };
+    const DEFAULT_CONFIG = { taxaBase: 5.00, valorKm: 2.20, valorMinuto: 0.35, valorEspera: 0.40, precoGasolina: 5.80, kmLiter: 10.0, manutencaoHora: 8.00, taxaTerceiro: 0 };
     let config = {};
 
     function switchTab(tabName) {
@@ -291,89 +358,143 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
         document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
         event.target.classList.add('active');
         document.getElementById(`tab-${tabName}`).classList.add('active');
-        
         if(tabName === 'historico') carregarHistoricoSupabase();
     }
 
     function carregarConfiguracoes() {
         const saved = localStorage.getItem('juarez_calc_config');
         config = saved ? JSON.parse(saved) : DEFAULT_CONFIG;
-        document.getElementById('cfgTaxaBase').value = config.taxaBase || 0;
-        document.getElementById('cfgValorKm').value = config.valorKm || 0;
-        document.getElementById('cfgValorMinuto').value = config.valorMinuto || 0;
+        document.getElementById('cfgTaxaBase').value = config.taxaBase;
+        document.getElementById('cfgValorKm').value = config.valorKm;
+        document.getElementById('cfgValorMinuto').value = config.valorMinuto;
+        document.getElementById('cfgValorEspera').value = config.valorEspera;
+        document.getElementById('cfgPrecoGasolina').value = config.precoGasolina;
+        document.getElementById('cfgKmLiter').value = config.kmLiter;
+        document.getElementById('cfgManutencaoHora').value = config.manutencaoHora;
+        document.getElementById('cfgTaxaTerceiro').value = config.taxaTerceiro;
     }
 
     function salvarConfiguracoes() {
         config = {
-            taxaBase: parseFloat(document.getElementById('cfgTaxaBase').value) || 0,
-            valorKm: parseFloat(document.getElementById('cfgValorKm').value) || 0,
-            valorMinuto: parseFloat(document.getElementById('cfgValorMinuto').value) || 0
+            taxaBase: Math.max(0, parseFloat(document.getElementById('cfgTaxaBase').value) || 0),
+            valorKm: Math.max(0, parseFloat(document.getElementById('cfgValorKm').value) || 0),
+            valorMinuto: Math.max(0, parseFloat(document.getElementById('cfgValorMinuto').value) || 0),
+            valorEspera: Math.max(0, parseFloat(document.getElementById('cfgValorEspera').value) || 0),
+            precoGasolina: Math.max(0, parseFloat(document.getElementById('cfgPrecoGasolina').value) || 0),
+            kmLiter: Math.max(1, parseFloat(document.getElementById('cfgKmLiter').value) || 1),
+            manutencaoHora: Math.max(0, parseFloat(document.getElementById('cfgManutencaoHora').value) || 0),
+            taxaTerceiro: Math.max(0, parseFloat(document.getElementById('cfgTaxaTerceiro').value) || 0)
         };
         localStorage.setItem('juarez_calc_config', JSON.stringify(config));
-        showToast("Tarifas salvas localmente!");
+        showToast("Tarifas guardadas!");
     }
+
+    function fmtMoney(v) { return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
 
     function calcularEExibir() {
         const dist = parseFloat(document.getElementById('distancia').value) || 0;
         const temp = parseFloat(document.getElementById('tempo').value) || 0;
-        const origem = document.getElementById('origem').value || 'Não informada';
-        const destino = document.getElementById('destino').value || 'Não informado';
+        const tempoEspera = parseFloat(document.getElementById('tempoEspera').value) || 0;
+        const fatorRetorno = parseFloat(document.getElementById('retornoVazio').value) || 0;
+        const dinamica = parseFloat(document.getElementById('dinamica').value) || 1.0;
+        const extras = parseFloat(document.getElementById('extras').value) || 0;
+        const desconto = parseFloat(document.getElementById('desconto').value) || 0;
 
-        const total = config.taxaBase + (dist * config.valorKm) + (temp * config.valorMinuto);
+        const origem = document.getElementById('origem').value.trim();
+        const destino = document.getElementById('destino').value.trim();
+        const dataInput = document.getElementById('dataCorrida').value;
+        const horaInput = document.getElementById('horaCorrida').value;
+
+        if (dist <= 0 || temp <= 0) { alert("Informe distância e tempo."); return; }
+
+        const kmEfetivo = dist * (1 + fatorRetorno);
+        const tempoEfetivo = temp * (1 + fatorRetorno); 
+
+        const subtotalBase = config.taxaBase + (kmEfetivo * config.valorKm) + (tempoEfetivo * config.valorMinuto) + (tempoEspera * config.valorEspera);
+        const valorComDinamica = subtotalBase * dinamica;
+        const valorTerceiro = valorComDinamica * (config.taxaTerceiro / 100);
         
-        document.getElementById('resValorTotal').innerText = total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        let precoFinal = valorComDinamica + valorTerceiro + extras - desconto;
+        if (precoFinal < 0) precoFinal = 0;
+
+        const gastoGas = (kmEfetivo / config.kmLiter) * config.precoGasolina;
+        const gastoManut = ((tempoEfetivo + tempoEspera) / 60) * config.manutencaoHora;
+        const lucro = precoFinal - gastoGas - gastoManut - valorTerceiro - extras;
+
+        // Atualiza UI
+        document.getElementById('resValorTotal').innerText = fmtMoney(precoFinal);
+        document.getElementById('resResumoTrajeto').innerText = `${dist} km • ${temp} min`;
+        document.getElementById('statLucro').innerText = fmtMoney(lucro);
+        document.getElementById('statGasolina').innerText = fmtMoney(gastoGas);
+        document.getElementById('statManutencao').innerText = fmtMoney(gastoManut);
+        document.getElementById('statTerceiro').innerText = fmtMoney(valorTerceiro);
+        
+        desenharGrafico(lucro, gastoGas, gastoManut, valorTerceiro);
+
+        let dataStrFiltro = "";
+        let dataExibicao = "A combinar";
+        if(dataInput && horaInput) {
+            const p = dataInput.split('-');
+            dataStrFiltro = `${p[2]}/${p[1]}/${p[0]}`;
+            dataExibicao = `${dataStrFiltro} às ${horaInput}`;
+        }
+
+        textoReciboAtual = `🚘 *ORÇAMENTO DE CORRIDA*\n📅 ${dataExibicao}\n📍 Origem: ${origem}\n📍 Destino: ${destino}\n📏 Distância: ${dist} KM\n💵 *VALOR: ${fmtMoney(precoFinal)}*`;
+        document.getElementById('receiptText').innerText = textoReciboAtual;
         document.getElementById('resultCard').style.display = 'block';
 
-        ultimaCorridaCalculada = {
+        // Prepara dados para Base de Dados (Básico)
+        ultimaCorridaBasica = {
             motorista_id: utilizadorAtual.id,
-            origem: origem,
-            destino: destino,
-            valor: total,
+            origem: origem || 'N/A',
+            destino: destino || 'N/A',
+            valor: precoFinal,
             status: 'concluida',
             status_pagamento: 'pendente'
         };
+
+        // Prepara dados para o LocalStorage (PDF Completo)
+        ultimaCorridaCompleta = {
+            dataFiltro: dataStrFiltro,
+            data: dataExibicao,
+            origem: origem, destino: destino, distancia: dist, tempo: temp,
+            valor: precoFinal, lucro: lucro, combustivel: gastoGas, manutencao: gastoManut, terceiro: valorTerceiro, extras: extras, desconto: desconto
+        };
     }
 
-   async function gravarCorridaSupabase() {
-        if (!ultimaCorridaCalculada) return;
+    // ==========================================
+    // 4. GRAVAÇÃO NA NUVEM E LOCAL
+    // ==========================================
+    async function gravarCorridaSistema() {
+        if (!ultimaCorridaBasica) return;
+        const btn = document.getElementById('btnSalvarNuvem');
+        btn.innerText = "A guardar..."; btn.disabled = true;
 
-        const btn = event.target;
-        btn.innerText = "A guardar...";
-
-        // CORREÇÃO: 'Corridas' com C maiúsculo
-        const { data, error } = await supabaseClient
-            .from('Corridas') 
-            .insert([ultimaCorridaCalculada]);
+        // 1. Guarda no Supabase (Nuvem)
+        const { error } = await supabaseClient.from('Corridas').insert([ultimaCorridaBasica]);
 
         if (error) {
-            alert("Erro ao guardar na base de dados: " + error.message);
-            console.error(error);
+            alert("Erro na nuvem: " + error.message);
         } else {
-            showToast("Corrida guardada na Nuvem!");
+            // 2. Guarda no LocalStorage (Para relatórios PDF)
+            let histLocal = JSON.parse(localStorage.getItem('juarez_calc_hist') || '[]');
+            histLocal.unshift(ultimaCorridaCompleta);
+            localStorage.setItem('juarez_calc_hist', JSON.stringify(histLocal));
+
+            showToast("Corrida guardada na Nuvem e Local!");
+            carregarHistoricoSupabase(); // Atualiza a lista na aba 3
         }
-        btn.innerText = "💾 Guardar Corrida no Sistema";
+        btn.innerText = "💾 Guardar no Histórico"; btn.disabled = false;
     }
 
     async function carregarHistoricoSupabase() {
         const container = document.getElementById('historicoLista');
         container.innerHTML = '<p style="text-align: center;">A carregar da nuvem...</p>';
 
-        // CORREÇÃO: 'Corridas' com C maiúsculo
-        const { data: corridas, error } = await supabaseClient
-            .from('Corridas') 
-            .select('*')
-            .order('data_hora', { ascending: false })
-            .limit(20);
+        const { data: corridas, error } = await supabaseClient.from('Corridas').select('*').order('data_hora', { ascending: false }).limit(20);
 
-        if (error) {
-            container.innerHTML = `<p style="color:red;">Erro: ${error.message}</p>`;
-            return;
-        }
-
-        if (corridas.length === 0) {
-            container.innerHTML = `<p style="text-align: center;">Nenhuma corrida na base de dados.</p>`;
-            return;
-        }
+        if (error) { container.innerHTML = `<p style="color:red;">Erro: ${error.message}</p>`; return; }
+        if (corridas.length === 0) { container.innerHTML = `<p style="text-align: center;">Nenhuma corrida registada.</p>`; return; }
 
         let html = '';
         corridas.forEach(item => {
@@ -381,21 +502,115 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
             html += `
                 <div style="background: var(--bg-card); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; margin-bottom: 8px;">
                     <div style="display: flex; justify-content: space-between; font-weight: bold; color: var(--accent-gold);">
-                        <span>R$ ${item.valor}</span>
-                        <span style="font-size: 0.75rem; color: var(--text-secondary);">${item.status}</span>
+                        <span>R$ ${item.valor}</span><span style="font-size: 0.75rem;">${item.status}</span>
                     </div>
                     <div style="font-size: 0.8rem; margin-top: 4px;">${item.origem} ➔ ${item.destino}</div>
-                    <div style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 2px;">Data: ${dataFmt}</div>
-                </div>
-            `;
+                    <div style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 2px;">${dataFmt}</div>
+                </div>`;
         });
         container.innerHTML = html;
     }
 
+    // ==========================================
+    // 5. UTILITÁRIOS (GPS, PDF, CHART, ZAP)
+    // ==========================================
+    async function calcularRotaOSM() {
+        const origem = document.getElementById('origem').value.trim();
+        const destino = document.getElementById('destino').value.trim();
+        const btn = document.getElementById('btnRota');
+        if (!origem || !destino) { alert("Preencha Origem e Destino."); return; }
+        btn.innerText = "⏳ A calcular..."; btn.disabled = true;
+
+        try {
+            const r1 = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(origem)}`);
+            const d1 = await r1.json();
+            const r2 = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(destino)}`);
+            const d2 = await r2.json();
+            
+            const rRota = await fetch(`https://router.project-osrm.org/route/v1/driving/${d1[0].lon},${d1[0].lat};${d2[0].lon},${d2[0].lat}?overview=false`);
+            const dRota = await rRota.json();
+
+            document.getElementById('distancia').value = (dRota.routes[0].distance / 1000).toFixed(1);
+            document.getElementById('tempo').value = Math.ceil(dRota.routes[0].duration / 60);
+            showToast("Rota calculada!");
+        } catch (e) { alert("Erro ao buscar rota. Especifique melhor o endereço."); }
+        btn.innerText = "📍 Calcular Distância e Tempo"; btn.disabled = false;
+    }
+
+    function desenharGrafico(lucro, gas, manut, terceiro) {
+        const canvas = document.getElementById('lucroChart');
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const l = lucro > 0 ? lucro : 0;
+        const total = l + gas + manut + terceiro;
+        if (total <= 0) return;
+
+        const data = [{ v: l, c: '#10B981' }, { v: gas, c: '#F87171' }, { v: manut, c: '#FBBF24' }, { v: terceiro, c: '#60A5FA' }];
+        let startAngle = -0.5 * Math.PI;
+        const cx = canvas.width / 2, cy = canvas.height / 2, r = Math.min(cx, cy) - 15;
+
+        data.forEach(s => {
+            if (s.v <= 0) return;
+            const sliceAngle = (s.v / total) * 2 * Math.PI;
+            ctx.beginPath(); ctx.arc(cx, cy, r, startAngle, startAngle + sliceAngle);
+            ctx.arc(cx, cy, r - 28, startAngle + sliceAngle, startAngle, true);
+            ctx.closePath(); ctx.fillStyle = s.c; ctx.fill();
+            startAngle += sliceAngle;
+        });
+
+        ctx.fillStyle = lucro > 0 ? '#10B981' : '#EF4444';
+        ctx.font = 'bold 13px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(lucro > 0 ? `${Math.round((lucro / total) * 100)}% Lucro` : 'Prejuízo', cx, cy);
+    }
+
+    function enviarWhatsApp() {
+        let tel = document.getElementById('clienteTel').value.replace(/\D/g, '');
+        if (tel.length >= 10 && !tel.startsWith('55')) tel = '55' + tel;
+        const url = tel ? `https://wa.me/${tel}?text=${encodeURIComponent(textoReciboAtual)}` : `https://api.whatsapp.com/send?text=${encodeURIComponent(textoReciboAtual)}`;
+        window.open(url, '_blank');
+    }
+
+    function copiarTexto() {
+        navigator.clipboard.writeText(textoReciboAtual).then(() => showToast("Copiado!"));
+    }
+
+    function exportarPDFReal() {
+        let hist = JSON.parse(localStorage.getItem('juarez_calc_hist') || '[]');
+        const filtro = document.getElementById('filtroDataPDF').value;
+        if (filtro) {
+            const p = filtro.split('-');
+            const dFiltro = `${p[2]}/${p[1]}/${p[0]}`;
+            hist = hist.filter(i => i.dataFiltro === dFiltro);
+        }
+        if (hist.length === 0) { alert("Sem dados locais para este período."); return; }
+
+        const { jsPDF } = window.jspdf; const doc = new jsPDF('p', 'mm', 'a4');
+        let tBruto = 0, tLucro = 0, tCustos = 0;
+
+        const body = hist.map(i => {
+            tBruto += i.valor || 0; tLucro += i.lucro || 0; tCustos += (i.combustivel + i.manutencao + i.terceiro);
+            return [i.data.split(' às ')[0], `${i.origem}\n➔ ${i.destino}`, `${i.distancia}km`, fmtMoney(i.valor), fmtMoney(i.lucro)];
+        });
+
+        doc.setFontSize(16); doc.text("Relatório de Corridas PRO", 14, 20);
+        doc.setFontSize(10); doc.text(`Faturamento: ${fmtMoney(tBruto)} | Custos: ${fmtMoney(tCustos)} | Lucro: ${fmtMoney(tLucro)}`, 14, 28);
+        
+        doc.autoTable({ startY: 35, head: [['Data', 'Trajeto', 'Dist.', 'Recebido', 'Lucro']], body: body });
+        doc.save(`Relatorio_${filtro || 'Geral'}.pdf`);
+    }
+
+    function exportarCSV() {
+        const hist = JSON.parse(localStorage.getItem('juarez_calc_hist') || '[]');
+        let csv = "Data;Origem;Destino;Valor;Lucro\n";
+        hist.forEach(i => csv += `"${i.data}";"${i.origem}";"${i.destino}";"${i.valor}";"${i.lucro}"\n`);
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+        a.download = "corridas.csv"; a.click();
+    }
+
     function showToast(msg) {
         const t = document.getElementById('toast');
-        t.innerText = msg;
-        t.style.display = 'block';
+        t.innerText = msg; t.style.display = 'block';
         setTimeout(() => t.style.display = 'none', 3000);
     }
 </script>
