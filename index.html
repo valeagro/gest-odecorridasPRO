@@ -323,6 +323,21 @@
             overflow-y: auto;
         }
 
+        .app-footer {
+            padding: 14px 16px;
+            text-align: center;
+            border-top: 1px solid var(--border-color);
+            background: var(--bg-body);
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .app-footer a {
+            color: var(--accent-gold);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
         .toast {
             position: fixed;
             bottom: 20px;
@@ -372,6 +387,13 @@
         <div class="loader" id="authLoader"></div>
         <button class="btn btn-primary" onclick="realizarLogin()" id="btnLogin">Entrar</button>
         <button class="btn btn-secondary" onclick="realizarRegisto()" id="btnRegisto">Criar Conta (7 Dias Grátis)</button>
+
+        <div style="margin-top: 20px; padding-top: 14px; border-top: 1px dashed var(--border-color); text-align: center; font-size: 0.75rem; color: var(--text-secondary);">
+            Desenvolvido por <strong style="color: var(--accent-gold);">Eliabe Araujo</strong><br>
+            <a href="javascript:void(0)" onclick="falarComSuporte()" style="color: #25D366; text-decoration: none; display: inline-block; margin-top: 6px; font-weight: 600;">
+                💬 Suporte e Dúvidas: (74) 98806-6444
+            </a>
+        </div>
     </div>
 </div>
 
@@ -411,10 +433,10 @@
 
         <p style="font-size: 0.72rem; color: var(--text-secondary); line-height: 1.4;">
             Conta vinculada: <strong id="paywallEmailUser" style="color: var(--text-primary);">--</strong><br>
-            Após o pagamento, envie o comprovante para ativação imediata do seu ID por 30 dias.
+            Após o pagamento, envie o comprovante para <b>Eliabe Araujo (74 98806-6444)</b> para ativação imediata por 30 dias.
         </p>
 
-        <button class="btn btn-whatsapp" onclick="enviarComprovanteWhatsApp()">📲 Informar Pagamento / Comprovante</button>
+        <button class="btn btn-whatsapp" onclick="enviarComprovanteWhatsApp()">📲 Enviar Comprovante (74 98806-6444)</button>
         <button class="btn btn-secondary" onclick="fazerLogout()" style="margin-top: 12px;">Sair / Trocar de Conta</button>
     </div>
 </div>
@@ -741,18 +763,31 @@
             <button class="btn btn-primary" id="btnSalvarTarifas" onclick="salvarConfiguracoesNuvem()">
                 ☁️ Salvar Perfil e Tarifas na Nuvem
             </button>
+
+            <div style="background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 10px; padding: 14px; margin-top: 24px; text-align: center;">
+                <div style="font-size: 0.78rem; color: var(--text-secondary);">Precisa de ajuda, suporte técnico ou enviar comprovante?</div>
+                <div style="font-size: 0.85rem; color: var(--accent-gold); font-weight: 700; margin: 4px 0;">Desenvolvedor: Eliabe Araujo</div>
+                <button class="btn btn-whatsapp" onclick="falarComSuporte()" style="padding: 10px; font-size: 0.85rem; margin-top: 8px;">
+                    💬 Suporte via WhatsApp (74) 98806-6444
+                </button>
+            </div>
         </div>
     </main>
+
+    <footer class="app-footer">
+        Desenvolvido por <strong>Eliabe Araujo</strong> • <a href="javascript:void(0)" onclick="falarComSuporte()">Suporte & PIX: (74) 98806-6444</a>
+    </footer>
 </div>
 
 <div class="toast" id="toast">Ação concluída!</div>
 
 <script>
     // ==========================================
-    // 1. CONFIGURAÇÃO SUPABASE
+    // 1. CONFIGURAÇÃO SUPABASE E CONTATO SUPORTE
     // ==========================================
     const SUPABASE_URL = 'https://hkndnvjdvzwztkwbvkls.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhrbmRudmpkdnp3enRrd2J2a2xzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE5MDE2OTYsImV4cCI6MjEwNzQ3NzY5Nn0.aZv-T9CmfilJs6tGO43HYtGlcGqcFnOjAj7zt7d4PCI';
+    const SUPORTE_WHATSAPP = '5574988066444';
     
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -768,6 +803,7 @@
     };
 
     let utilizadorAtual = null;
+    let sessaoIniciadaId = null;
     let perfilMotorista = { nome: "Motorista Particular", telefone: "", cidadePadrao: "" };
     let config = { ...DEFAULT_CONFIG };
     let ultimaCorridaNuvem = null;
@@ -786,12 +822,14 @@
 
         supabaseClient.auth.onAuthStateChange((event, session) => {
             if (session && session.user) {
-                if (!utilizadorAtual || utilizadorAtual.id !== session.user.id) {
+                if (sessaoIniciadaId !== session.user.id) {
+                    sessaoIniciadaId = session.user.id;
                     limparMemoriaLocal();
                     utilizadorAtual = session.user;
                     verificarAssinaturaEMostrarApp();
                 }
             } else if (event === 'SIGNED_OUT') {
+                sessaoIniciadaId = null;
                 limparMemoriaLocal();
                 utilizadorAtual = null;
                 document.getElementById('main-app').style.display = 'none';
@@ -804,8 +842,11 @@
         try {
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (session && session.user) {
-                utilizadorAtual = session.user;
-                verificarAssinaturaEMostrarApp();
+                if (sessaoIniciadaId !== session.user.id) {
+                    sessaoIniciadaId = session.user.id;
+                    utilizadorAtual = session.user;
+                    verificarAssinaturaEMostrarApp();
+                }
             } else {
                 document.getElementById('auth-container').style.display = 'flex';
             }
@@ -885,6 +926,7 @@
             if (error) {
                 alert("Erro ao entrar: " + error.message);
             } else if (data && data.user) {
+                sessaoIniciadaId = data.user.id;
                 utilizadorAtual = data.user;
                 verificarAssinaturaEMostrarApp();
             }
@@ -926,6 +968,7 @@
     }
 
     async function fazerLogout() {
+        sessaoIniciadaId = null;
         limparMemoriaLocal();
         await supabaseClient.auth.signOut();
     }
@@ -936,8 +979,8 @@
         document.getElementById('main-app').style.display = 'flex';
         document.getElementById('userEmailDisplay').innerText = utilizadorAtual.email;
         
+        await carregarPerfilETarifasNuvem();
         await Promise.all([
-            carregarPerfilETarifasNuvem(),
             carregarClientesSupabase(),
             carregarHistoricoSupabase()
         ]);
@@ -967,12 +1010,18 @@
     function enviarComprovanteWhatsApp() {
         const emailConta = utilizadorAtual ? utilizadorAtual.email : '';
         const idConta = utilizadorAtual ? utilizadorAtual.id : '';
-        const msg = encodeURIComponent(`Olá! Efetuei o pagamento da mensalidade (R$ 22,00) na chave PIX para renovar 30 dias do Calculadora PRO.\n\nE-mail: ${emailConta}\nID: ${idConta}`);
-        window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank');
+        const msg = encodeURIComponent(`Olá Eliabe! Efetuei o pagamento da mensalidade (R$ 22,00) na chave PIX para renovar 30 dias do Calculadora PRO.\n\nE-mail: ${emailConta}\nID: ${idConta}`);
+        window.open(`https://wa.me/${SUPORTE_WHATSAPP}?text=${msg}`, '_blank');
+    }
+
+    function falarComSuporte() {
+        const emailConta = utilizadorAtual ? ` (Conta: ${utilizadorAtual.email})` : '';
+        const msg = encodeURIComponent(`Olá Eliabe! Preciso de suporte/informações sobre o aplicativo Calculadora PRO${emailConta}.`);
+        window.open(`https://wa.me/${SUPORTE_WHATSAPP}?text=${msg}`, '_blank');
     }
 
     // ==========================================
-    // 3. MÓDULO DE CLIENTES E TARIFAS (ISOLADOS POR CONTA)
+    // 3. MÓDULO DE CLIENTES E TARIFAS (100% NUVEM + BACKUP POR USUÁRIO)
     // ==========================================
     async function carregarClientesSupabase() {
         if (!utilizadorAtual) return;
@@ -1099,6 +1148,19 @@
 
     async function carregarPerfilETarifasNuvem() {
         if (!utilizadorAtual) return;
+
+        // 1. Carrega cache local isolado por ID do usuário (para resposta imediata)
+        const chaveCacheUser = `calc_pro_cfg_${utilizadorAtual.id}`;
+        const cacheSalvo = localStorage.getItem(chaveCacheUser);
+        if (cacheSalvo) {
+            try {
+                const parsed = JSON.parse(cacheSalvo);
+                if (parsed.perfil) perfilMotorista = { ...perfilMotorista, ...parsed.perfil };
+                if (parsed.config) config = { ...DEFAULT_CONFIG, ...parsed.config };
+            } catch (e) {}
+        }
+
+        // 2. Busca os dados oficiais na nuvem (Supabase)
         try {
             const { data, error } = await supabaseClient
                 .from('Motoristas')
@@ -1107,14 +1169,38 @@
                 .maybeSingle();
 
             if (!error && data) {
-                perfilMotorista.nome = data.nome || "";
-                perfilMotorista.telefone = data.telefone || "";
-                perfilMotorista.cidadePadrao = data.cidade_padrao || "";
-                config = { ...DEFAULT_CONFIG, ...(data.config_tarifas || {}) };
+                perfilMotorista.nome = data.nome || perfilMotorista.nome || "";
+                perfilMotorista.telefone = data.telefone || perfilMotorista.telefone || "";
+                perfilMotorista.cidadePadrao = data.cidade_padrao || perfilMotorista.cidadePadrao || "";
+
+                let tarifasNuvem = data.config_tarifas;
+                if (typeof tarifasNuvem === 'string') {
+                    try { tarifasNuvem = JSON.parse(tarifasNuvem); } catch (e) { tarifasNuvem = null; }
+                }
+
+                if (tarifasNuvem && typeof tarifasNuvem === 'object') {
+                    config = {
+                        taxaBase: Number(tarifasNuvem.taxaBase ?? DEFAULT_CONFIG.taxaBase),
+                        valorKm: Number(tarifasNuvem.valorKm ?? DEFAULT_CONFIG.valorKm),
+                        valorMinuto: Number(tarifasNuvem.valorMinuto ?? DEFAULT_CONFIG.valorMinuto),
+                        valorEspera: Number(tarifasNuvem.valorEspera ?? DEFAULT_CONFIG.valorEspera),
+                        precoGasolina: Number(tarifasNuvem.precoGasolina ?? DEFAULT_CONFIG.precoGasolina),
+                        kmLiter: Number(tarifasNuvem.kmLiter ?? DEFAULT_CONFIG.kmLiter),
+                        manutencaoHora: Number(tarifasNuvem.manutencaoHora ?? DEFAULT_CONFIG.manutencaoHora),
+                        taxaTerceiro: Number(tarifasNuvem.taxaTerceiro ?? DEFAULT_CONFIG.taxaTerceiro)
+                    };
+                }
+
+                // Atualiza o cache local específico deste motorista
+                localStorage.setItem(chaveCacheUser, JSON.stringify({
+                    perfil: perfilMotorista,
+                    config: config
+                }));
             }
         } catch (e) {
-            console.error("Erro ao carregar perfil:", e);
+            console.error("Erro ao carregar perfil da nuvem:", e);
         }
+
         atualizarInterfacePerfilETarifas();
     }
 
@@ -1135,6 +1221,7 @@
     }
 
     async function salvarConfiguracoesNuvem() {
+        if (!utilizadorAtual) return;
         const btn = document.getElementById('btnSalvarTarifas');
         btn.innerText = "⏳ Salvando na nuvem...";
         btn.disabled = true;
@@ -1143,33 +1230,50 @@
         perfilMotorista.telefone = document.getElementById('cfgTelefoneMotorista').value.trim();
         perfilMotorista.cidadePadrao = document.getElementById('cfgCidadePadrao').value.trim();
 
-        config = {
-            taxaBase: Math.max(0, parseFloat(document.getElementById('cfgTaxaBase').value) || 0),
-            valorKm: Math.max(0, parseFloat(document.getElementById('cfgValorKm').value) || 0),
-            valorMinuto: Math.max(0, parseFloat(document.getElementById('cfgValorMinuto').value) || 0),
-            valorEspera: Math.max(0, parseFloat(document.getElementById('cfgValorEspera').value) || 0),
-            precoGasolina: Math.max(0, parseFloat(document.getElementById('cfgPrecoGasolina').value) || 0),
-            kmLiter: Math.max(1, parseFloat(document.getElementById('cfgKmLiter').value) || 1),
-            manutencaoHora: Math.max(0, parseFloat(document.getElementById('cfgManutencaoHora').value) || 0),
-            taxaTerceiro: Math.max(0, parseFloat(document.getElementById('cfgTaxaTerceiro').value) || 0)
+        const lerCampoNum = (id, padrao, minVal = 0) => {
+            const raw = String(document.getElementById(id).value).replace(',', '.');
+            const num = parseFloat(raw);
+            return isNaN(num) ? padrao : Math.max(minVal, num);
         };
 
-        const { error } = await supabaseClient.from('Motoristas').upsert({
-            id: utilizadorAtual.id,
-            email: utilizadorAtual.email,
-            nome: perfilMotorista.nome || null,
-            telefone: perfilMotorista.telefone || null,
-            cidade_padrao: perfilMotorista.cidadePadrao || null,
-            config_tarifas: config
-        });
+        config = {
+            taxaBase: lerCampoNum('cfgTaxaBase', DEFAULT_CONFIG.taxaBase, 0),
+            valorKm: lerCampoNum('cfgValorKm', DEFAULT_CONFIG.valorKm, 0),
+            valorMinuto: lerCampoNum('cfgValorMinuto', DEFAULT_CONFIG.valorMinuto, 0),
+            valorEspera: lerCampoNum('cfgValorEspera', DEFAULT_CONFIG.valorEspera, 0),
+            precoGasolina: lerCampoNum('cfgPrecoGasolina', DEFAULT_CONFIG.precoGasolina, 0),
+            kmLiter: lerCampoNum('cfgKmLiter', DEFAULT_CONFIG.kmLiter, 1),
+            manutencaoHora: lerCampoNum('cfgManutencaoHora', DEFAULT_CONFIG.manutencaoHora, 0),
+            taxaTerceiro: lerCampoNum('cfgTaxaTerceiro', DEFAULT_CONFIG.taxaTerceiro, 0)
+        };
+
+        // Salva no cache específico do usuário
+        const chaveCacheUser = `calc_pro_cfg_${utilizadorAtual.id}`;
+        localStorage.setItem(chaveCacheUser, JSON.stringify({
+            perfil: perfilMotorista,
+            config: config
+        }));
+
+        // Salva no Supabase usando upsert com onConflict no id
+        const { error } = await supabaseClient
+            .from('Motoristas')
+            .upsert({
+                id: utilizadorAtual.id,
+                email: utilizadorAtual.email,
+                nome: perfilMotorista.nome || null,
+                telefone: perfilMotorista.telefone || null,
+                cidade_padrao: perfilMotorista.cidadePadrao || null,
+                config_tarifas: config
+            }, { onConflict: 'id' });
 
         btn.innerText = "☁️ Salvar Perfil e Tarifas na Nuvem";
         btn.disabled = false;
 
-        if (error) alert("Erro ao salvar configurações: " + error.message);
-        else {
+        if (error) {
+            alert("Aviso: Salvo no aparelho, mas houve erro no banco da nuvem: " + error.message);
+        } else {
             atualizarInterfacePerfilETarifas();
-            showToast("Perfil e tarifas salvos na nuvem!");
+            showToast("Perfil e tarifas salvos na nuvem com sucesso!");
         }
     }
 
@@ -1340,7 +1444,6 @@
         const container = document.getElementById('historicoLista');
         container.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">Sincronizando com a nuvem...</p>';
 
-        // Filtra estritamente pelo motorista_id da conta logada
         const { data, error } = await supabaseClient
             .from('Corridas')
             .select('*')
@@ -1650,7 +1753,6 @@
     }
 
     async function buscarCoordenadasNominatim(enderecoDigitado, cidadeContexto) {
-        // 1ª Tentativa: Com a cidade padrão (se for apenas 1 cidade simples e o utilizador não digitou vírgula)
         if (cidadeContexto && !enderecoDigitado.includes(',') && !cidadeContexto.toLowerCase().includes(' e ')) {
             const queryComCidade = `${enderecoDigitado}, ${cidadeContexto}`;
             const r1 = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(queryComCidade)}`);
@@ -1658,12 +1760,10 @@
             if (d1 && d1.length > 0) return d1[0];
         }
 
-        // 2ª Tentativa: Endereço exato como digitado (focado no Brasil)
         const r2 = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=br&q=${encodeURIComponent(enderecoDigitado)}`);
         const d2 = await r2.json();
         if (d2 && d2.length > 0) return d2[0];
 
-        // 3ª Tentativa: Busca direta global (idêntica ao index original)
         const r3 = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(enderecoDigitado)}`);
         const d3 = await r3.json();
         if (d3 && d3.length > 0) return d3[0];
