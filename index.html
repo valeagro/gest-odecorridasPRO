@@ -265,6 +265,7 @@
             padding: 16px;
             margin-top: 20px;
             display: none;
+            scroll-margin-top: 80px;
         }
 
         .price-display {
@@ -324,8 +325,8 @@
         }
 
         .app-footer {
-            padding: 14px 16px;
             text-align: center;
+            padding: 16px;
             border-top: 1px solid var(--border-color);
             background: var(--bg-body);
             font-size: 0.75rem;
@@ -388,11 +389,9 @@
         <button class="btn btn-primary" onclick="realizarLogin()" id="btnLogin">Entrar</button>
         <button class="btn btn-secondary" onclick="realizarRegisto()" id="btnRegisto">Criar Conta (7 Dias Grátis)</button>
 
-        <div style="margin-top: 20px; padding-top: 14px; border-top: 1px dashed var(--border-color); text-align: center; font-size: 0.75rem; color: var(--text-secondary);">
-            Desenvolvido por <strong style="color: var(--accent-gold);">Eliabe Araujo</strong><br>
-            <a href="javascript:void(0)" onclick="falarComSuporte()" style="color: #25D366; text-decoration: none; display: inline-block; margin-top: 6px; font-weight: 600;">
-                💬 Suporte e Dúvidas: (74) 98806-6444
-            </a>
+        <div style="margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--border-color); text-align: center; font-size: 0.75rem; color: var(--text-secondary);">
+            Desenvolvido por <strong style="color: var(--text-primary);">Eliabe Araujo</strong><br>
+            Suporte e Dúvidas: <a href="https://wa.me/5574988066444" target="_blank" style="color: var(--accent-gold); text-decoration: none; font-weight: bold;">(74) 98806-6444</a>
         </div>
     </div>
 </div>
@@ -433,7 +432,7 @@
 
         <p style="font-size: 0.72rem; color: var(--text-secondary); line-height: 1.4;">
             Conta vinculada: <strong id="paywallEmailUser" style="color: var(--text-primary);">--</strong><br>
-            Após o pagamento, envie o comprovante para <b>Eliabe Araujo (74 98806-6444)</b> para ativação imediata por 30 dias.
+            Envie o comprovante para <b>Eliabe Araujo (74 98806-6444)</b> para ativação imediata por 30 dias.
         </p>
 
         <button class="btn btn-whatsapp" onclick="enviarComprovanteWhatsApp()">📲 Enviar Comprovante (74 98806-6444)</button>
@@ -763,19 +762,13 @@
             <button class="btn btn-primary" id="btnSalvarTarifas" onclick="salvarConfiguracoesNuvem()">
                 ☁️ Salvar Perfil e Tarifas na Nuvem
             </button>
-
-            <div style="background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 10px; padding: 14px; margin-top: 24px; text-align: center;">
-                <div style="font-size: 0.78rem; color: var(--text-secondary);">Precisa de ajuda, suporte técnico ou enviar comprovante?</div>
-                <div style="font-size: 0.85rem; color: var(--accent-gold); font-weight: 700; margin: 4px 0;">Desenvolvedor: Eliabe Araujo</div>
-                <button class="btn btn-whatsapp" onclick="falarComSuporte()" style="padding: 10px; font-size: 0.85rem; margin-top: 8px;">
-                    💬 Suporte via WhatsApp (74) 98806-6444
-                </button>
-            </div>
         </div>
     </main>
 
+    <!-- RODAPÉ COM CRÉDITOS E SUPORTE -->
     <footer class="app-footer">
-        Desenvolvido por <strong>Eliabe Araujo</strong> • <a href="javascript:void(0)" onclick="falarComSuporte()">Suporte & PIX: (74) 98806-6444</a>
+        Desenvolvido por <strong>Eliabe Araujo</strong><br>
+        Dúvidas, Suporte e Comprovantes: <a href="https://wa.me/5574988066444" target="_blank">📲 (74) 98806-6444</a>
     </footer>
 </div>
 
@@ -783,12 +776,12 @@
 
 <script>
     // ==========================================
-    // 1. CONFIGURAÇÃO SUPABASE E CONTATO SUPORTE
+    // 1. CONFIGURAÇÃO SUPABASE E CONSTANTES
     // ==========================================
     const SUPABASE_URL = 'https://hkndnvjdvzwztkwbvkls.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhrbmRudmpkdnp3enRrd2J2a2xzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE5MDE2OTYsImV4cCI6MjEwNzQ3NzY5Nn0.aZv-T9CmfilJs6tGO43HYtGlcGqcFnOjAj7zt7d4PCI';
     const SUPORTE_WHATSAPP = '5574988066444';
-    
+
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const DEFAULT_CONFIG = {
@@ -803,7 +796,7 @@
     };
 
     let utilizadorAtual = null;
-    let sessaoIniciadaId = null;
+    let inicializandoSessao = false;
     let perfilMotorista = { nome: "Motorista Particular", telefone: "", cidadePadrao: "" };
     let config = { ...DEFAULT_CONFIG };
     let ultimaCorridaNuvem = null;
@@ -821,29 +814,25 @@
         document.getElementById('filtroDataPDF').value = "";
 
         supabaseClient.auth.onAuthStateChange((event, session) => {
-            if (session && session.user) {
-                if (sessaoIniciadaId !== session.user.id) {
-                    sessaoIniciadaId = session.user.id;
-                    limparMemoriaLocal();
-                    utilizadorAtual = session.user;
-                    verificarAssinaturaEMostrarApp();
-                }
-            } else if (event === 'SIGNED_OUT') {
-                sessaoIniciadaId = null;
+            if (event === 'SIGNED_OUT') {
                 limparMemoriaLocal();
                 utilizadorAtual = null;
                 document.getElementById('main-app').style.display = 'none';
                 document.getElementById('paywall-container').style.display = 'none';
                 document.getElementById('onboarding-modal').style.display = 'none';
                 document.getElementById('auth-container').style.display = 'flex';
+            } else if (session && session.user) {
+                if (!utilizadorAtual || utilizadorAtual.id !== session.user.id) {
+                    utilizadorAtual = session.user;
+                    verificarAssinaturaEMostrarApp();
+                }
             }
         });
 
         try {
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (session && session.user) {
-                if (sessaoIniciadaId !== session.user.id) {
-                    sessaoIniciadaId = session.user.id;
+                if (!utilizadorAtual) {
                     utilizadorAtual = session.user;
                     verificarAssinaturaEMostrarApp();
                 }
@@ -872,6 +861,9 @@
     }
 
     async function verificarAssinaturaEMostrarApp() {
+        if (inicializandoSessao || !utilizadorAtual) return;
+        inicializandoSessao = true;
+
         try {
             const { data, error } = await supabaseClient
                 .from('Motoristas')
@@ -890,6 +882,7 @@
                     document.getElementById('onboarding-modal').style.display = 'none';
                     document.getElementById('paywallEmailUser').innerText = utilizadorAtual.email;
                     document.getElementById('paywall-container').style.display = 'flex';
+                    inicializandoSessao = false;
                     return;
                 }
 
@@ -901,7 +894,8 @@
             console.error("Erro na verificação de assinatura:", e);
         }
 
-        mostrarAplicacao();
+        await mostrarAplicacao();
+        inicializandoSessao = false;
     }
 
     async function fecharOnboarding() {
@@ -926,9 +920,8 @@
             if (error) {
                 alert("Erro ao entrar: " + error.message);
             } else if (data && data.user) {
-                sessaoIniciadaId = data.user.id;
                 utilizadorAtual = data.user;
-                verificarAssinaturaEMostrarApp();
+                await verificarAssinaturaEMostrarApp();
             }
         } catch (err) {
             alert("Erro de conexão: " + err.message);
@@ -968,8 +961,8 @@
     }
 
     async function fazerLogout() {
-        sessaoIniciadaId = null;
         limparMemoriaLocal();
+        utilizadorAtual = null;
         await supabaseClient.auth.signOut();
     }
 
@@ -1014,14 +1007,8 @@
         window.open(`https://wa.me/${SUPORTE_WHATSAPP}?text=${msg}`, '_blank');
     }
 
-    function falarComSuporte() {
-        const emailConta = utilizadorAtual ? ` (Conta: ${utilizadorAtual.email})` : '';
-        const msg = encodeURIComponent(`Olá Eliabe! Preciso de suporte/informações sobre o aplicativo Calculadora PRO${emailConta}.`);
-        window.open(`https://wa.me/${SUPORTE_WHATSAPP}?text=${msg}`, '_blank');
-    }
-
     // ==========================================
-    // 3. MÓDULO DE CLIENTES E TARIFAS (100% NUVEM + BACKUP POR USUÁRIO)
+    // 3. MÓDULO DE CLIENTES E TARIFAS (SINCRONIZAÇÃO NUVEM + BACKUP)
     // ==========================================
     async function carregarClientesSupabase() {
         if (!utilizadorAtual) return;
@@ -1148,19 +1135,19 @@
 
     async function carregarPerfilETarifasNuvem() {
         if (!utilizadorAtual) return;
+        const chaveLocalBackup = `calc_pro_cfg_${utilizadorAtual.id}`;
 
-        // 1. Carrega cache local isolado por ID do usuário (para resposta imediata)
-        const chaveCacheUser = `calc_pro_cfg_${utilizadorAtual.id}`;
-        const cacheSalvo = localStorage.getItem(chaveCacheUser);
-        if (cacheSalvo) {
+        // 1. Carrega primeiro o backup local imediato do usuário caso exista
+        const backupSalvo = localStorage.getItem(chaveLocalBackup);
+        if (backupSalvo) {
             try {
-                const parsed = JSON.parse(cacheSalvo);
+                const parsed = JSON.parse(backupSalvo);
                 if (parsed.perfil) perfilMotorista = { ...perfilMotorista, ...parsed.perfil };
                 if (parsed.config) config = { ...DEFAULT_CONFIG, ...parsed.config };
             } catch (e) {}
         }
 
-        // 2. Busca os dados oficiais na nuvem (Supabase)
+        // 2. Busca na nuvem (Supabase) e sincroniza
         try {
             const { data, error } = await supabaseClient
                 .from('Motoristas')
@@ -1172,30 +1159,10 @@
                 perfilMotorista.nome = data.nome || perfilMotorista.nome || "";
                 perfilMotorista.telefone = data.telefone || perfilMotorista.telefone || "";
                 perfilMotorista.cidadePadrao = data.cidade_padrao || perfilMotorista.cidadePadrao || "";
-
-                let tarifasNuvem = data.config_tarifas;
-                if (typeof tarifasNuvem === 'string') {
-                    try { tarifasNuvem = JSON.parse(tarifasNuvem); } catch (e) { tarifasNuvem = null; }
+                if (data.config_tarifas && Object.keys(data.config_tarifas).length > 0) {
+                    config = { ...DEFAULT_CONFIG, ...data.config_tarifas };
                 }
-
-                if (tarifasNuvem && typeof tarifasNuvem === 'object') {
-                    config = {
-                        taxaBase: Number(tarifasNuvem.taxaBase ?? DEFAULT_CONFIG.taxaBase),
-                        valorKm: Number(tarifasNuvem.valorKm ?? DEFAULT_CONFIG.valorKm),
-                        valorMinuto: Number(tarifasNuvem.valorMinuto ?? DEFAULT_CONFIG.valorMinuto),
-                        valorEspera: Number(tarifasNuvem.valorEspera ?? DEFAULT_CONFIG.valorEspera),
-                        precoGasolina: Number(tarifasNuvem.precoGasolina ?? DEFAULT_CONFIG.precoGasolina),
-                        kmLiter: Number(tarifasNuvem.kmLiter ?? DEFAULT_CONFIG.kmLiter),
-                        manutencaoHora: Number(tarifasNuvem.manutencaoHora ?? DEFAULT_CONFIG.manutencaoHora),
-                        taxaTerceiro: Number(tarifasNuvem.taxaTerceiro ?? DEFAULT_CONFIG.taxaTerceiro)
-                    };
-                }
-
-                // Atualiza o cache local específico deste motorista
-                localStorage.setItem(chaveCacheUser, JSON.stringify({
-                    perfil: perfilMotorista,
-                    config: config
-                }));
+                localStorage.setItem(chaveLocalBackup, JSON.stringify({ perfil: perfilMotorista, config: config }));
             }
         } catch (e) {
             console.error("Erro ao carregar perfil da nuvem:", e);
@@ -1230,55 +1197,63 @@
         perfilMotorista.telefone = document.getElementById('cfgTelefoneMotorista').value.trim();
         perfilMotorista.cidadePadrao = document.getElementById('cfgCidadePadrao').value.trim();
 
-        const lerCampoNum = (id, padrao, minVal = 0) => {
-            const raw = String(document.getElementById(id).value).replace(',', '.');
-            const num = parseFloat(raw);
-            return isNaN(num) ? padrao : Math.max(minVal, num);
+        const lerCampoNum = (id, padrao) => {
+            const val = parseFloat(document.getElementById(id).value);
+            return isNaN(val) ? padrao : val;
         };
 
         config = {
-            taxaBase: lerCampoNum('cfgTaxaBase', DEFAULT_CONFIG.taxaBase, 0),
-            valorKm: lerCampoNum('cfgValorKm', DEFAULT_CONFIG.valorKm, 0),
-            valorMinuto: lerCampoNum('cfgValorMinuto', DEFAULT_CONFIG.valorMinuto, 0),
-            valorEspera: lerCampoNum('cfgValorEspera', DEFAULT_CONFIG.valorEspera, 0),
-            precoGasolina: lerCampoNum('cfgPrecoGasolina', DEFAULT_CONFIG.precoGasolina, 0),
-            kmLiter: lerCampoNum('cfgKmLiter', DEFAULT_CONFIG.kmLiter, 1),
-            manutencaoHora: lerCampoNum('cfgManutencaoHora', DEFAULT_CONFIG.manutencaoHora, 0),
-            taxaTerceiro: lerCampoNum('cfgTaxaTerceiro', DEFAULT_CONFIG.taxaTerceiro, 0)
+            taxaBase: Math.max(0, lerCampoNum('cfgTaxaBase', DEFAULT_CONFIG.taxaBase)),
+            valorKm: Math.max(0, lerCampoNum('cfgValorKm', DEFAULT_CONFIG.valorKm)),
+            valorMinuto: Math.max(0, lerCampoNum('cfgValorMinuto', DEFAULT_CONFIG.valorMinuto)),
+            valorEspera: Math.max(0, lerCampoNum('cfgValorEspera', DEFAULT_CONFIG.valorEspera)),
+            precoGasolina: Math.max(0, lerCampoNum('cfgPrecoGasolina', DEFAULT_CONFIG.precoGasolina)),
+            kmLiter: Math.max(1, lerCampoNum('cfgKmLiter', DEFAULT_CONFIG.kmLiter)),
+            manutencaoHora: Math.max(0, lerCampoNum('cfgManutencaoHora', DEFAULT_CONFIG.manutencaoHora)),
+            taxaTerceiro: Math.max(0, lerCampoNum('cfgTaxaTerceiro', DEFAULT_CONFIG.taxaTerceiro))
         };
 
-        // Salva no cache específico do usuário
-        const chaveCacheUser = `calc_pro_cfg_${utilizadorAtual.id}`;
-        localStorage.setItem(chaveCacheUser, JSON.stringify({
-            perfil: perfilMotorista,
-            config: config
-        }));
+        // Salva no backup local vinculado ao ID do motorista
+        const chaveLocalBackup = `calc_pro_cfg_${utilizadorAtual.id}`;
+        localStorage.setItem(chaveLocalBackup, JSON.stringify({ perfil: perfilMotorista, config: config }));
 
-        // Salva no Supabase usando upsert com onConflict no id
-        const { error } = await supabaseClient
+        // Atualiza na tabela Motoristas do Supabase
+        const { data: atualizado, error: errUpdate } = await supabaseClient
             .from('Motoristas')
-            .upsert({
+            .update({
+                nome: perfilMotorista.nome || null,
+                telefone: perfilMotorista.telefone || null,
+                cidade_padrao: perfilMotorista.cidadePadrao || null,
+                config_tarifas: config
+            })
+            .eq('id', utilizadorAtual.id)
+            .select();
+
+        // Caso a linha do motorista ainda não exista na tabela, insere via upsert
+        if (!errUpdate && (!atualizado || atualizado.length === 0)) {
+            await supabaseClient.from('Motoristas').upsert({
                 id: utilizadorAtual.id,
                 email: utilizadorAtual.email,
                 nome: perfilMotorista.nome || null,
                 telefone: perfilMotorista.telefone || null,
                 cidade_padrao: perfilMotorista.cidadePadrao || null,
                 config_tarifas: config
-            }, { onConflict: 'id' });
+            });
+        }
 
         btn.innerText = "☁️ Salvar Perfil e Tarifas na Nuvem";
         btn.disabled = false;
 
-        if (error) {
-            alert("Aviso: Salvo no aparelho, mas houve erro no banco da nuvem: " + error.message);
+        if (errUpdate) {
+            alert("Aviso: Salvo no dispositivo, mas houve erro na nuvem (" + errUpdate.message + "). Verifique se executou o SQL da tabela Motoristas.");
         } else {
             atualizarInterfacePerfilETarifas();
-            showToast("Perfil e tarifas salvos na nuvem com sucesso!");
+            showToast("Perfil e tarifas salvos na nuvem!");
         }
     }
 
     // ==========================================
-    // 4. CÁLCULO DE CORRIDA E HISTÓRICO ISOLADO
+    // 4. CÁLCULO DE CORRIDA COM ROLAGEM AUTOMÁTICA
     // ==========================================
     function toggleJustificativa() {
         const d = parseFloat(document.getElementById('dinamica').value) || 1;
@@ -1394,7 +1369,14 @@
 
         textoReciboAtual = r;
         document.getElementById('receiptText').innerText = r;
-        document.getElementById('resultCard').style.display = 'block';
+        
+        const cardResultado = document.getElementById('resultCard');
+        cardResultado.style.display = 'block';
+
+        // Rola a tela automaticamente e suavemente até os resultados e gráfico
+        setTimeout(() => {
+            cardResultado.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
 
         ultimaCorridaNuvem = {
             motorista_id: utilizadorAtual.id,
