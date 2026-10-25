@@ -38,104 +38,258 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-body); color: var(--text-primary);
-            margin: 0; padding: 0; display: flex; justify-content: center; min-height: 100vh;
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
         }
 
         .app-container {
-            width: 100%; max-width: 480px; background: var(--bg-card);
-            min-height: 100vh; display: flex; flex-direction: column;
-            box-shadow: 0 0 20px rgba(0,0,0,0.8); position: relative;
+            width: 100%;
+            max-width: 480px;
+            background: var(--bg-card);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+            position: relative;
         }
 
         #auth-screen {
-            background: var(--bg-input); border: 1px solid var(--border-color);
-            border-radius: 12px; padding: 20px; margin: auto; max-width: 90%; width: 100%;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin: auto;
+            max-width: 90%;
+            width: 100%;
         }
 
         /* MODAL DE BOAS-VINDAS (ONBOARDING) */
         #onboarding-modal {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85); z-index: 999; display: none;
-            justify-content: center; align-items: center; padding: 20px;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 999;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
         }
         .modal-card {
-            background: var(--bg-card); border: 1px solid var(--accent-gold);
-            border-radius: 16px; padding: 24px; max-width: 420px; width: 100%; text-align: center;
+            background: var(--bg-card);
+            border: 1px solid var(--accent-gold);
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 420px;
+            width: 100%;
+            text-align: center;
         }
 
         /* TELA DE PAYWALL (PIX) */
         #paywall-container {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg-body); z-index: 998; display: none;
-            flex-direction: column; justify-content: center; align-items: center; padding: 20px; text-align: center;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-body);
+            z-index: 998;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            text-align: center;
         }
 
         header {
-            background: rgba(30, 30, 34, 0.95); backdrop-filter: blur(10px);
-            padding: 16px 20px; border-bottom: 1px solid var(--border-color);
-            position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center;
+            background: rgba(30, 30, 34, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        header h1 { margin: 0; font-size: 1.1rem; color: var(--accent-gold); font-weight: 700; display: flex; align-items: center; gap: 8px; }
-        header p { margin: 2px 0 0 0; font-size: 0.75rem; color: var(--text-secondary); }
 
-        .tab-nav { display: flex; background: var(--bg-body); border-bottom: 1px solid var(--border-color); }
+        header h1 {
+            margin: 0;
+            font-size: 1.1rem;
+            color: var(--accent-gold);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        header p {
+            margin: 2px 0 0 0;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .tab-nav {
+            display: flex;
+            background: var(--bg-body);
+            border-bottom: 1px solid var(--border-color);
+        }
+
         .tab-btn {
-            flex: 1; padding: 12px 6px; background: none; border: none; color: var(--text-secondary);
-            font-size: 0.78rem; font-weight: 600; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; text-align: center;
+            flex: 1;
+            padding: 12px 6px;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+            text-align: center;
         }
-        .tab-btn.active { color: var(--accent-gold); border-bottom-color: var(--accent-gold); background: var(--bg-card); }
 
-        main { padding: 16px; flex: 1; overflow-y: auto; }
+        .tab-btn.active {
+            color: var(--accent-gold);
+            border-bottom-color: var(--accent-gold);
+            background: var(--bg-card);
+        }
+
+        main {
+            padding: 16px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
         .section-title {
-            font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em;
-            color: var(--text-secondary); margin: 18px 0 10px 0; font-weight: 700;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-secondary);
+            margin: 18px 0 10px 0;
+            font-weight: 700;
         }
+
         .section-title:first-child { margin-top: 0; }
 
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
         .form-group { margin-bottom: 12px; }
         .form-group.full { grid-column: span 2; }
 
-        label { display: block; font-size: 0.8rem; color: var(--text-primary); margin-bottom: 5px; font-weight: 500; }
-        input, select {
-            width: 100%; padding: 12px; background-color: var(--bg-input);
-            border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 0.95rem; outline: none;
+        label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-primary);
+            margin-bottom: 5px;
+            font-weight: 500;
         }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
         input:focus, select:focus { border-color: var(--accent-gold); }
         input[type="date"], input[type="time"] { color-scheme: dark; }
 
         .btn {
-            width: 100%; padding: 14px; border-radius: 8px; border: none; font-size: 0.95rem;
-            font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; margin-top: 10px;
+            width: 100%;
+            padding: 14px;
+            border-radius: 8px;
+            border: none;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+            margin-top: 10px;
         }
+
         .btn-primary { background-color: var(--accent-gold); color: #121214; }
-        .btn-primary:active { transform: scale(0.98); }
+        .btn-primary:active { background-color: var(--accent-gold-hover); transform: scale(0.98); }
         .btn-whatsapp { background-color: #25D366; color: #ffffff; }
         .btn-pdf { background-color: #3B82F6; color: #ffffff; }
         .btn-secondary { background-color: transparent; border: 1px solid var(--border-color); color: var(--text-primary); }
 
         .btn-mini {
-            padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-color);
-            background: var(--bg-card); color: var(--text-primary); font-size: 0.72rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-size: 0.72rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
         }
 
-        .badge { padding: 3px 8px; border-radius: 12px; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; }
+        .badge {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
         .badge-pago { background: rgba(16, 185, 129, 0.15); color: var(--green-success); border: 1px solid var(--green-success); }
         .badge-pendente { background: rgba(239, 68, 68, 0.15); color: var(--red-alert); border: 1px solid var(--red-alert); }
         .badge-agendada { background: rgba(59, 130, 246, 0.15); color: var(--blue-info); border: 1px solid var(--blue-info); }
         .badge-concluida { background: rgba(142, 142, 154, 0.15); color: var(--text-secondary); border: 1px solid var(--border-color); }
 
-        .result-card { background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; margin-top: 20px; display: none; }
-        .price-display { text-align: center; padding-bottom: 12px; border-bottom: 1px dashed var(--border-color); }
+        .result-card {
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .price-display {
+            text-align: center;
+            padding-bottom: 12px;
+            border-bottom: 1px dashed var(--border-color);
+        }
+
         .price-label { font-size: 0.8rem; color: var(--text-secondary); }
         .price-value { font-size: 2.2rem; font-weight: 800; color: var(--green-success); margin: 4px 0; }
 
-        .financial-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 14px 0; }
-        .stat-item { background: var(--bg-card); padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); }
+        .financial-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin: 14px 0;
+        }
+
+        .stat-item {
+            background: var(--bg-card);
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
         .stat-item .title { font-size: 0.7rem; color: var(--text-secondary); }
         .stat-item .val { font-size: 0.95rem; font-weight: 700; margin-top: 2px; }
         .stat-item.profit .val { color: var(--green-success); }
@@ -143,22 +297,57 @@
         .stat-item.maint .val { color: #FBBF24; }
         .stat-item.third .val { color: #60A5FA; }
 
-        .chart-box { position: relative; width: 100%; height: 180px; margin: 15px 0; display: flex; justify-content: center; align-items: center; }
+        .chart-box {
+            position: relative;
+            width: 100%;
+            height: 180px;
+            margin: 15px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
         canvas { max-width: 100%; max-height: 100%; }
 
         .receipt-preview {
-            background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px;
-            padding: 12px; font-family: monospace; font-size: 0.8rem; color: #D4D4D8; white-space: pre-wrap; margin-top: 12px; max-height: 180px; overflow-y: auto;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: #D4D4D8;
+            white-space: pre-wrap;
+            margin-top: 12px;
+            max-height: 180px;
+            overflow-y: auto;
         }
 
         .toast {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--green-success);
-            color: #fff; padding: 10px 20px; border-radius: 30px; font-size: 0.85rem; font-weight: 600; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.4); z-index: 2000;
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--green-success);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            z-index: 2000;
         }
 
         .loader {
-            border: 3px solid #f3f3f3; border-top: 3px solid var(--accent-gold); border-radius: 50%;
-            width: 20px; height: 20px; animation: spin 1s linear infinite; display: none; margin: auto;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--accent-gold);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: none;
+            margin: auto;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
@@ -171,12 +360,18 @@
         <h2 style="text-align: center; color: var(--accent-gold); margin-top:0;">Calculadora PRO</h2>
         <p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem;">Gestão inteligente e lucrativa para motoristas</p>
         
-        <div class="form-group"><label>E-mail</label><input type="email" id="authEmail" placeholder="seu@email.com"></div>
-        <div class="form-group"><label>Senha</label><input type="password" id="authSenha" placeholder="******"></div>
+        <div class="form-group">
+            <label>E-mail</label>
+            <input type="email" id="authEmail" placeholder="seu@email.com">
+        </div>
+        <div class="form-group">
+            <label>Senha</label>
+            <input type="password" id="authSenha" placeholder="******">
+        </div>
         
         <div class="loader" id="authLoader"></div>
         <button class="btn btn-primary" onclick="realizarLogin()" id="btnLogin">Entrar</button>
-        <button class="btn btn-secondary" onclick="realizarRegisto()" id="btnRegisto">Criar Conta</button>
+        <button class="btn btn-secondary" onclick="realizarRegisto()" id="btnRegisto">Criar Conta (7 Dias Grátis)</button>
     </div>
 </div>
 
@@ -187,14 +382,14 @@
         <p style="font-size: 0.85rem; color: var(--text-primary); line-height: 1.5; text-align: left;">
             Você ganhou <b>7 dias de teste gratuito completo</b>! Com este sistema, você pode:
         </p>
-        <ul style="font-size: 0.8rem; color: var(--text-secondary); text-align: left; padding-left: 20px; line-height: 1.4;">
+        <ul style="font-size: 0.8rem; color: var(--text-secondary); text-align: left; padding-left: 20px; line-height: 1.5;">
             <li>Calcular preços justos com base em KM, tempo, espera e retorno vazio.</li>
             <li>Conhecer seu <b>lucro líquido real</b> abatendo combustível e manutenção.</li>
-            <li>Gerenciar sua carteira de clientes e agendamentos.</li>
-            <li>Emitir relatórios financeiros em PDF e orçamentos via WhatsApp.</li>
+            <li>Gerenciar sua carteira de clientes, agendamentos e pagamentos pendentes.</li>
+            <li>Emitir relatórios financeiros em PDF e enviar orçamentos via WhatsApp.</li>
         </ul>
-        <p style="font-size: 0.75rem; color: var(--accent-gold); margin-top: 15px;">
-            Após o período de teste, o plano PRO continuará por apenas <b>R$ 22,00/mês</b>.
+        <p style="font-size: 0.78rem; color: var(--accent-gold); margin-top: 15px; background: rgba(245, 158, 11, 0.1); padding: 10px; border-radius: 8px;">
+            Após os 7 dias de avaliação gratuita, a assinatura mensal do plano PRO é de apenas <b>R$ 22,00/mês</b>.
         </p>
         <button class="btn btn-primary" onclick="fecharOnboarding()" style="margin-top: 15px;">Começar a Usar Agora</button>
     </div>
@@ -203,23 +398,24 @@
 <!-- TELA DE PAYWALL / PAGAMENTO PIX (R$ 22,00) -->
 <div id="paywall-container">
     <div style="background: var(--bg-input); border: 1px solid var(--accent-gold); border-radius: 16px; padding: 24px; max-width: 420px; width: 100%;">
-        <h2 style="color: var(--accent-gold); margin-top: 0;">⏳ Período de Teste Expirado</h2>
+        <h2 style="color: var(--accent-gold); margin-top: 0;">⏳ Período de Teste Encerrado</h2>
         <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4;">
-            Seus 7 dias gratuitos chegaram ao fim. Para continuar aproveitando todas as ferramentas de gestão e lucros, renove sua assinatura mensal por apenas <b style="color: var(--green-success);">R$ 22,00</b>.
+            O seu período de acesso expirou. Para liberar mais <b>30 dias de acesso completo</b> ao sistema de gestão e relatórios, efetue o pagamento da mensalidade de <b style="color: var(--green-success);">R$ 22,00</b> via PIX:
         </p>
         
         <div style="background: var(--bg-card); padding: 14px; border-radius: 10px; margin: 16px 0; border: 1px solid var(--border-color); text-align: left;">
-            <div style="font-size: 0.75rem; color: var(--text-secondary);">CHAVE PIX (CNPJ / UUID):</div>
-            <div style="color: var(--accent-gold); font-family: monospace; font-size: 0.82rem; word-break: break-all; margin: 4px 0 10px 0; user-select: all;" id="pixChaveTexto">3f1860ee-b11c-4cef-a726-a2429a56999e</div>
-            <button class="btn-mini" style="width: 100%; justify-content: center; background: var(--accent-gold); color: #121214; font-weight: bold;" onclick="copiarPix()">📋 Copiar Chave PIX</button>
+            <div style="font-size: 0.72rem; color: var(--text-secondary); font-weight: bold;">CHAVE PIX ALEATÓRIA:</div>
+            <div style="color: var(--accent-gold); font-family: monospace; font-size: 0.82rem; word-break: break-all; margin: 6px 0 12px 0; user-select: all;" id="pixChaveTexto">3f1860ee-b11c-4cef-a726-a2429a56999e</div>
+            <button class="btn-mini" style="width: 100%; justify-content: center; background: var(--accent-gold); color: #121214; font-weight: bold; padding: 10px;" onclick="copiarPix()">📋 Copiar Chave PIX</button>
         </div>
 
-        <p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.4;">
-            Após efetuar o pagamento, clique no botão abaixo para enviar o comprovante e liberar mais <b>30 dias de acesso imediato</b>.
+        <p style="font-size: 0.72rem; color: var(--text-secondary); line-height: 1.4;">
+            Conta vinculada: <strong id="paywallEmailUser" style="color: var(--text-primary);">--</strong><br>
+            Após o pagamento, envie o comprovante para ativação imediata do seu ID por 30 dias.
         </p>
 
-        <button class="btn btn-whatsapp" onclick="enviarComprovanteWhatsApp()">📲 Enviar Comprovante via WhatsApp</button>
-        <button class="btn btn-secondary" onclick="fazerLogout()" style="margin-top: 15px;">Sair / Entrar com Outra Conta</button>
+        <button class="btn btn-whatsapp" onclick="enviarComprovanteWhatsApp()">📲 Informar Pagamento / Comprovante</button>
+        <button class="btn btn-secondary" onclick="fazerLogout()" style="margin-top: 12px;">Sair / Trocar de Conta</button>
     </div>
 </div>
 
@@ -241,7 +437,7 @@
     </nav>
 
     <main>
-        <!-- ABA 1: CALCULADORA -->
+        <!-- ABA 1: CALCULADORA DE CORRIDA -->
         <div id="tab-calculadora" class="tab-content active">
             <div class="section-title">Dados do Passageiro e Agenda</div>
             
@@ -253,13 +449,25 @@
             </div>
 
             <div class="form-grid">
-                <div class="form-group"><label>Nome do Cliente</label><input type="text" id="clienteNome" placeholder="Ex: Maria Silva"></div>
-                <div class="form-group"><label>WhatsApp do Cliente</label><input type="tel" id="clienteTel" placeholder="Ex: 87999998888"></div>
+                <div class="form-group">
+                    <label>Nome do Cliente</label>
+                    <input type="text" id="clienteNome" placeholder="Ex: Maria Silva">
+                </div>
+                <div class="form-group">
+                    <label>WhatsApp do Cliente</label>
+                    <input type="tel" id="clienteTel" placeholder="Ex: 87999998888">
+                </div>
             </div>
             
             <div class="form-grid">
-                <div class="form-group"><label>Data da Corrida</label><input type="date" id="dataCorrida"></div>
-                <div class="form-group"><label>Horário</label><input type="time" id="horaCorrida"></div>
+                <div class="form-group">
+                    <label>Data da Corrida</label>
+                    <input type="date" id="dataCorrida">
+                </div>
+                <div class="form-group">
+                    <label>Horário</label>
+                    <input type="time" id="horaCorrida">
+                </div>
             </div>
 
             <div class="form-grid">
@@ -280,8 +488,14 @@
             </div>
 
             <div class="form-grid">
-                <div class="form-group"><label>Origem</label><input type="text" id="origem" placeholder="Ex: Aeroporto"></div>
-                <div class="form-group"><label>Destino</label><input type="text" id="destino" placeholder="Ex: Hotel Centro"></div>
+                <div class="form-group">
+                    <label>Origem</label>
+                    <input type="text" id="origem" placeholder="Ex: Aeroporto Petrolina">
+                </div>
+                <div class="form-group">
+                    <label>Destino</label>
+                    <input type="text" id="destino" placeholder="Ex: Centro Juazeiro">
+                </div>
             </div>
             
             <div class="form-group full">
@@ -292,12 +506,21 @@
 
             <div class="section-title">Parâmetros do Trajeto</div>
             <div class="form-grid">
-                <div class="form-group"><label>Distância (KM)</label><input type="number" id="distancia" placeholder="Ex: 25.5" step="0.1" min="0"></div>
-                <div class="form-group"><label>Tempo Estimado (Min)</label><input type="number" id="tempo" placeholder="Ex: 35" min="0"></div>
+                <div class="form-group">
+                    <label>Distância (KM)</label>
+                    <input type="number" id="distancia" placeholder="Ex: 25.5" step="0.1" min="0">
+                </div>
+                <div class="form-group">
+                    <label>Tempo Estimado (Min)</label>
+                    <input type="number" id="tempo" placeholder="Ex: 35" min="0">
+                </div>
             </div>
 
             <div class="form-grid">
-                <div class="form-group"><label>Espera / Paradas (Min)</label><input type="number" id="tempoEspera" value="0" min="0"></div>
+                <div class="form-group">
+                    <label>Espera / Paradas (Min)</label>
+                    <input type="number" id="tempoEspera" value="0" placeholder="Ex: 10" min="0">
+                </div>
                 <div class="form-group">
                     <label>Cobrar Retorno Vazio?</label>
                     <select id="retornoVazio">
@@ -309,11 +532,20 @@
             </div>
 
             <div class="form-grid">
-                <div class="form-group"><label>Dinâmica (Multiplicador)</label><input type="number" id="dinamica" value="1.0" step="0.1" min="1.0" oninput="toggleJustificativa()"></div>
-                <div class="form-group"><label>Desconto Especial (R$)</label><input type="number" id="desconto" value="0.00" step="0.50" min="0"></div>
+                <div class="form-group">
+                    <label>Dinâmica (Multiplicador)</label>
+                    <input type="number" id="dinamica" value="1.0" step="0.1" min="1.0" oninput="toggleJustificativa()">
+                </div>
+                <div class="form-group">
+                    <label>Desconto Especial (R$)</label>
+                    <input type="number" id="desconto" value="0.00" step="0.50" min="0">
+                </div>
             </div>
             
-            <div class="form-group full"><label>Pedágios / Custos Extras (R$)</label><input type="number" id="extras" value="0.00" step="0.50" min="0"></div>
+            <div class="form-group full">
+                <label>Pedágios / Custos Extras (R$)</label>
+                <input type="number" id="extras" value="0.00" step="0.50" min="0">
+            </div>
 
             <div class="form-group full" id="boxJustificativa" style="display: none;">
                 <label>Motivo do Dinâmico (Sairá no Orçamento)</label>
@@ -322,7 +554,7 @@
 
             <button class="btn btn-primary" onclick="calcularEExibir()">Calcular Preço & Análise</button>
 
-            <!-- CARD DE RESULTADO -->
+            <!-- CARD DE RESULTADO E GRÁFICO -->
             <div class="result-card" id="resultCard">
                 <div class="price-display">
                     <div class="price-label">Valor Sugerido ao Cliente</div>
@@ -332,42 +564,82 @@
 
                 <div class="section-title">Análise de Lucro Líquido Real</div>
                 <div class="financial-stats">
-                    <div class="stat-item profit"><div class="title">Lucro Líquido</div><div class="val" id="statLucro">R$ 0,00</div></div>
-                    <div class="stat-item fuel"><div class="title">Combustível</div><div class="val" id="statGasolina">R$ 0,00</div></div>
-                    <div class="stat-item maint"><div class="title">Manutenção</div><div class="val" id="statManutencao">R$ 0,00</div></div>
-                    <div class="stat-item third"><div class="title">Terceiro</div><div class="val" id="statTerceiro">R$ 0,00</div></div>
+                    <div class="stat-item profit">
+                        <div class="title">Lucro Líquido</div>
+                        <div class="val" id="statLucro">R$ 0,00</div>
+                    </div>
+                    <div class="stat-item fuel">
+                        <div class="title">Custo Combustível</div>
+                        <div class="val" id="statGasolina">R$ 0,00</div>
+                    </div>
+                    <div class="stat-item maint">
+                        <div class="title">Custo Manutenção</div>
+                        <div class="val" id="statManutencao">R$ 0,00</div>
+                    </div>
+                    <div class="stat-item third">
+                        <div class="title">Repasse Terceiro</div>
+                        <div class="val" id="statTerceiro">R$ 0,00</div>
+                    </div>
                 </div>
 
-                <div class="chart-box"><canvas id="lucroChart" width="220" height="180"></canvas></div>
+                <div class="chart-box">
+                    <canvas id="lucroChart" width="220" height="180"></canvas>
+                </div>
 
                 <div class="section-title">Prévia da Mensagem para WhatsApp</div>
                 <div class="receipt-preview" id="receiptText"></div>
 
-                <button class="btn btn-primary" id="btnSalvarNuvem" onclick="gravarCorridaSistema()" style="margin-top: 15px;">💾 Guardar Corrida na Nuvem</button>
-                <button class="btn btn-whatsapp" onclick="enviarWhatsApp()">📲 Enviar no WhatsApp do Cliente</button>
-                <button class="btn btn-secondary" onclick="copiarTexto()">📋 Copiar Apenas Texto</button>
+                <button class="btn btn-primary" id="btnSalvarNuvem" onclick="gravarCorridaSistema()" style="margin-top: 15px;">
+                    💾 Guardar Corrida na Nuvem
+                </button>
+                <button class="btn btn-whatsapp" onclick="enviarWhatsApp()">
+                    📲 Enviar no WhatsApp do Cliente
+                </button>
+                <button class="btn btn-secondary" onclick="copiarTexto()">
+                    📋 Copiar Apenas Texto
+                </button>
             </div>
         </div>
 
-        <!-- ABA 2: CLIENTES -->
+        <!-- ABA 2: CARTEIRA DE CLIENTES -->
         <div id="tab-clientes" class="tab-content">
             <div class="section-title">Cadastrar Novo Cliente</div>
             <div style="background: var(--bg-input); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 18px;">
-                <div class="form-group"><label>Nome / Apelido</label><input type="text" id="novoClienteNome" placeholder="Ex: Dr. Carlos"></div>
-                <div class="form-group"><label>WhatsApp</label><input type="tel" id="novoClienteTel" placeholder="Ex: 87999998888"></div>
-                <div class="form-group"><label>Endereço Padrão (Opcional)</label><input type="text" id="novoClienteEnd" placeholder="Ex: Condomínio Sol"></div>
-                <button class="btn btn-primary" id="btnSalvarCliente" onclick="salvarClienteNuvem()">➕ Salvar Cliente na Carteira</button>
+                <div class="form-group">
+                    <label>Nome Completo / Apelido</label>
+                    <input type="text" id="novoClienteNome" placeholder="Ex: Dr. Carlos / Dona Ana">
+                </div>
+                <div class="form-group">
+                    <label>WhatsApp</label>
+                    <input type="tel" id="novoClienteTel" placeholder="Ex: 87999998888">
+                </div>
+                <div class="form-group">
+                    <label>Endereço Padrão / Favorito (Opcional)</label>
+                    <input type="text" id="novoClienteEnd" placeholder="Ex: Condomínio Sol, Petrolina">
+                </div>
+                <button class="btn btn-primary" id="btnSalvarCliente" onclick="salvarClienteNuvem()">
+                    ➕ Salvar Cliente na Carteira
+                </button>
             </div>
+
             <div class="section-title">Meus Clientes Salvos</div>
-            <div id="clientesLista"><p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem;">Carregando...</p></div>
+            <div id="clientesLista">
+                <p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem;">Carregando clientes...</p>
+            </div>
         </div>
 
-        <!-- ABA 3: HISTÓRICO -->
+        <!-- ABA 3: HISTÓRICO E CONTROLE DE PAGAMENTOS -->
         <div id="tab-historico" class="tab-content">
-            <div class="section-title">Resumo Financeiro</div>
+            <div class="section-title">Resumo Financeiro das Corridas</div>
             <div class="financial-stats" style="margin-top: 0; margin-bottom: 14px;">
-                <div class="stat-item profit"><div class="title">Total Recebido (Pago)</div><div class="val" id="resumoTotalPago">R$ 0,00</div></div>
-                <div class="stat-item fuel"><div class="title">A Receber (Pendente)</div><div class="val" id="resumoTotalPendente">R$ 0,00</div></div>
+                <div class="stat-item profit">
+                    <div class="title">Total Recebido (Pago)</div>
+                    <div class="val" id="resumoTotalPago">R$ 0,00</div>
+                </div>
+                <div class="stat-item fuel">
+                    <div class="title">A Receber (Fiado/Pendente)</div>
+                    <div class="val" id="resumoTotalPendente">R$ 0,00</div>
+                </div>
             </div>
 
             <div class="form-grid" style="margin-bottom: 12px;">
@@ -375,53 +647,100 @@
                     <label style="font-size: 0.72rem;">Filtrar Pagamento</label>
                     <select id="filtroStatusPag" onchange="renderizarListaHistorico()" style="padding: 8px; font-size: 0.85rem;">
                         <option value="todos">Todos</option>
-                        <option value="pendente">⏳ Pendentes</option>
-                        <option value="pago">💵 Pagos</option>
+                        <option value="pendente">⏳ Apenas Pendentes</option>
+                        <option value="pago">💵 Apenas Pagos</option>
                     </select>
                 </div>
                 <div style="display: flex; align-items: flex-end;">
-                    <button class="btn btn-secondary" onclick="carregarHistoricoSupabase()" style="margin-top: 0; padding: 9px; font-size: 0.85rem;">🔄 Atualizar</button>
+                    <button class="btn btn-secondary" onclick="carregarHistoricoSupabase()" style="margin-top: 0; padding: 9px; font-size: 0.85rem;">
+                        🔄 Atualizar
+                    </button>
                 </div>
             </div>
             
-            <div id="historicoLista"><p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem; margin-top: 30px;">Carregando...</p></div>
+            <div id="historicoLista">
+                <p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem; margin-top: 30px;">
+                    Carregando histórico...
+                </p>
+            </div>
             
             <div style="background: var(--bg-input); padding: 12px; border-radius: 8px; margin-top: 20px; border: 1px solid var(--border-color);">
-                <div class="section-title" style="margin-top: 0;">Relatório PDF</div>
+                <div class="section-title" style="margin-top: 0;">Filtro de Relatório PDF (Nuvem)</div>
+                <label style="font-size: 0.75rem; margin-bottom: 8px;">Selecione uma data específica (ou apague a data para exportar todo o histórico):</label>
                 <input type="date" id="filtroDataPDF" style="margin-bottom: 10px;">
-                <button class="btn btn-pdf" id="btnPdf" onclick="exportarPDFReal()">📄 Gerar PDF Financeiro</button>
+                <button class="btn btn-pdf" id="btnPdf" onclick="exportarPDFReal()">
+                    📄 Gerar Relatório Financeiro (PDF)
+                </button>
             </div>
-            <button class="btn btn-secondary" onclick="exportarCSV()" style="margin-top: 10px;">📊 Exportar Planilha (CSV)</button>
+
+            <button class="btn btn-secondary" onclick="exportarCSV()" style="margin-top: 10px;">
+                📊 Exportar Planilha (CSV)
+            </button>
         </div>
 
-        <!-- ABA 4: TARIFAS -->
+        <!-- ABA 4: PERFIL E TARIFAS -->
         <div id="tab-tarifas" class="tab-content">
-            <div class="section-title">Dados Profissionais</div>
-            <div class="form-group full"><label>Nome Profissional</label><input type="text" id="cfgNomeMotorista" placeholder="Ex: Juarez"></div>
-            <div class="form-group full"><label>WhatsApp</label><input type="tel" id="cfgTelefoneMotorista" placeholder="Ex: 87999998888"></div>
-            <div class="form-group full"><label>Cidade / Região (GPS)</label><input type="text" id="cfgCidadePadrao" placeholder="Ex: Juazeiro e Petrolina"></div>
-
-            <div class="section-title">Base de Preço</div>
-            <div class="form-grid">
-                <div class="form-group"><label>Taxa Base (R$)</label><input type="number" id="cfgTaxaBase" step="0.50"></div>
-                <div class="form-group"><label>Valor KM (R$)</label><input type="number" id="cfgValorKm" step="0.10"></div>
+            <div class="section-title">Meus Dados Profissionais</div>
+            <div class="form-group full">
+                <label>Seu Nome Profissional (Sai no Orçamento)</label>
+                <input type="text" id="cfgNomeMotorista" placeholder="Ex: Juarez B. Araujo">
             </div>
-            <div class="form-grid">
-                <div class="form-group"><label>Valor Minuto (R$)</label><input type="number" id="cfgValorMinuto" step="0.05"></div>
-                <div class="form-group"><label>Minuto Espera (R$)</label><input type="number" id="cfgValorEspera" step="0.05"></div>
+            <div class="form-group full">
+                <label>Seu Telefone / WhatsApp</label>
+                <input type="tel" id="cfgTelefoneMotorista" placeholder="Ex: 87999998888">
             </div>
-
-            <div class="section-title">Custos do Veículo</div>
-            <div class="form-grid">
-                <div class="form-group"><label>Combustível (R$/L)</label><input type="number" id="cfgPrecoGasolina" step="0.10"></div>
-                <div class="form-group"><label>Autonomia (KM/L)</label><input type="number" id="cfgKmLiter" step="0.5"></div>
-            </div>
-            <div class="form-grid">
-                <div class="form-group"><label>Manut/Hora (R$)</label><input type="number" id="cfgManutencaoHora" step="1.00"></div>
-                <div class="form-group"><label>Taxa Terceiro (%)</label><input type="number" id="cfgTaxaTerceiro" step="1" max="100"></div>
+            <div class="form-group full">
+                <label>Cidade Principal para o GPS (Apenas 1 cidade ou em branco)</label>
+                <input type="text" id="cfgCidadePadrao" placeholder="Ex: Petrolina">
             </div>
 
-            <button class="btn btn-primary" id="btnSalvarTarifas" onclick="salvarConfiguracoesNuvem()">☁️ Salvar Tarifas na Nuvem</button>
+            <div class="section-title">Base de Preço da Corrida</div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Taxa Base / Entrada (R$)</label>
+                    <input type="number" id="cfgTaxaBase" step="0.50" min="0">
+                </div>
+                <div class="form-group">
+                    <label>Valor por KM (R$)</label>
+                    <input type="number" id="cfgValorKm" step="0.10" min="0">
+                </div>
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Valor por Minuto (R$)</label>
+                    <input type="number" id="cfgValorMinuto" step="0.05" min="0">
+                </div>
+                <div class="form-group">
+                    <label>Valor Minuto Espera (R$)</label>
+                    <input type="number" id="cfgValorEspera" step="0.05" min="0">
+                </div>
+            </div>
+
+            <div class="section-title">Custos do Veículo (Para Cálculo do Lucro)</div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Preço Combustível (R$/L)</label>
+                    <input type="number" id="cfgPrecoGasolina" step="0.10" min="0">
+                </div>
+                <div class="form-group">
+                    <label>Autonomia (KM/L)</label>
+                    <input type="number" id="cfgKmLiter" step="0.5" min="1">
+                </div>
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Manutenção / Hora (R$)</label>
+                    <input type="number" id="cfgManutencaoHora" step="1.00" min="0">
+                </div>
+                <div class="form-group">
+                    <label>Taxa Terceiro (%)</label>
+                    <input type="number" id="cfgTaxaTerceiro" step="1" min="0" max="100">
+                </div>
+            </div>
+
+            <button class="btn btn-primary" id="btnSalvarTarifas" onclick="salvarConfiguracoesNuvem()">
+                ☁️ Salvar Perfil e Tarifas na Nuvem
+            </button>
         </div>
     </main>
 </div>
@@ -438,12 +757,18 @@
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const DEFAULT_CONFIG = {
-        taxaBase: 5.00, valorKm: 2.20, valorMinuto: 0.35, valorEspera: 0.40,
-        precoGasolina: 5.80, kmLiter: 10.0, manutencaoHora: 8.00, taxaTerceiro: 0
+        taxaBase: 5.00,
+        valorKm: 2.20,
+        valorMinuto: 0.35,
+        valorEspera: 0.40,
+        precoGasolina: 5.80,
+        kmLiter: 10.0,
+        manutencaoHora: 8.00,
+        taxaTerceiro: 0
     };
 
     let utilizadorAtual = null;
-    let perfilMotorista = { nome: "Motorista", telefone: "", cidadePadrao: "Juazeiro e Petrolina" };
+    let perfilMotorista = { nome: "Motorista Particular", telefone: "", cidadePadrao: "" };
     let config = { ...DEFAULT_CONFIG };
     let ultimaCorridaNuvem = null;
     let corridasCacheNuvem = [];
@@ -457,12 +782,17 @@
         const agora = new Date();
         document.getElementById('dataCorrida').value = agora.toISOString().split('T')[0];
         document.getElementById('horaCorrida').value = agora.toTimeString().substring(0, 5);
+        document.getElementById('filtroDataPDF').value = "";
 
         supabaseClient.auth.onAuthStateChange((event, session) => {
             if (session && session.user) {
-                utilizadorAtual = session.user;
-                verificarAssinaturaEMostrarApp();
+                if (!utilizadorAtual || utilizadorAtual.id !== session.user.id) {
+                    limparMemoriaLocal();
+                    utilizadorAtual = session.user;
+                    verificarAssinaturaEMostrarApp();
+                }
             } else if (event === 'SIGNED_OUT') {
+                limparMemoriaLocal();
                 utilizadorAtual = null;
                 document.getElementById('main-app').style.display = 'none';
                 document.getElementById('paywall-container').style.display = 'none';
@@ -484,6 +814,22 @@
         }
     };
 
+    function limparMemoriaLocal() {
+        corridasCacheNuvem = [];
+        clientesCacheNuvem = [];
+        ultimaCorridaNuvem = null;
+        textoReciboAtual = "";
+        perfilMotorista = { nome: "Motorista Particular", telefone: "", cidadePadrao: "" };
+        config = { ...DEFAULT_CONFIG };
+
+        document.getElementById('historicoLista').innerHTML = '';
+        document.getElementById('clientesLista').innerHTML = '';
+        document.getElementById('selectClienteRapido').innerHTML = '<option value="">-- Passageiro Avulso / Digitar Manualmente --</option>';
+        document.getElementById('resultCard').style.display = 'none';
+        document.getElementById('resumoTotalPago').innerText = 'R$ 0,00';
+        document.getElementById('resumoTotalPendente').innerText = 'R$ 0,00';
+    }
+
     async function verificarAssinaturaEMostrarApp() {
         try {
             const { data, error } = await supabaseClient
@@ -494,24 +840,24 @@
 
             if (!error && data) {
                 const ativo = data.assinatura_ativa !== false;
-                const hoje = new Date().toISOString();
-                const vencido = data.data_vencimento && data.data_vencimento < hoje;
+                const agoraISO = new Date().toISOString();
+                const vencido = data.data_vencimento && new Date(data.data_vencimento).toISOString() < agoraISO;
 
                 if (!ativo || vencido) {
                     document.getElementById('auth-container').style.display = 'none';
                     document.getElementById('main-app').style.display = 'none';
                     document.getElementById('onboarding-modal').style.display = 'none';
+                    document.getElementById('paywallEmailUser').innerText = utilizadorAtual.email;
                     document.getElementById('paywall-container').style.display = 'flex';
                     return;
                 }
 
-                // Exibe modal de boas-vindas se for novo usuário (onboarding não visto)
                 if (data.onboarding_visto === false) {
                     document.getElementById('onboarding-modal').style.display = 'flex';
                 }
             }
         } catch (e) {
-            console.error("Erro na verificação:", e);
+            console.error("Erro na verificação de assinatura:", e);
         }
 
         mostrarAplicacao();
@@ -519,19 +865,22 @@
 
     async function fecharOnboarding() {
         document.getElementById('onboarding-modal').style.display = 'none';
-        await supabaseClient
-            .from('Motoristas')
-            .update({ onboarding_visto: true })
-            .eq('id', utilizadorAtual.id);
+        if (utilizadorAtual) {
+            await supabaseClient
+                .from('Motoristas')
+                .update({ onboarding_visto: true })
+                .eq('id', utilizadorAtual.id);
+        }
     }
 
     async function realizarLogin() {
         const email = document.getElementById('authEmail').value.trim();
         const password = document.getElementById('authSenha').value;
-        if (!email || !password) { alert("Preencha e-mail e senha."); return; }
+        if (!email || !password) { alert("Preencha o e-mail e a senha."); return; }
 
         alternarCarregamentoAuth(true);
         try {
+            limparMemoriaLocal();
             const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
             if (error) {
                 alert("Erro ao entrar: " + error.message);
@@ -540,7 +889,7 @@
                 verificarAssinaturaEMostrarApp();
             }
         } catch (err) {
-            alert("Erro de conexão.");
+            alert("Erro de conexão: " + err.message);
         } finally {
             alternarCarregamentoAuth(false);
         }
@@ -549,36 +898,37 @@
     async function realizarRegisto() {
         const email = document.getElementById('authEmail').value.trim();
         const password = document.getElementById('authSenha').value;
-        if (!email || !password) { alert("Preencha e-mail e senha."); return; }
+        if (!email || !password) { alert("Preencha o e-mail e a senha."); return; }
 
         alternarCarregamentoAuth(true);
         try {
-            // Cria a conta sem logar automaticamente por cima da sessão antiga
-            const { data, error } = await supabaseClient.auth.signUp({ 
-                email, 
+            limparMemoriaLocal();
+            const { data, error } = await supabaseClient.auth.signUp({
+                email,
                 password,
                 options: {
-                    emailRedirectTo: window.location.href // Evita erro de redirecionamento para localhost
+                    emailRedirectTo: window.location.href
                 }
             });
 
             if (error) {
                 alert("Erro ao criar conta: " + error.message);
             } else {
-                alert("Conta criada com sucesso! Você ganhou 7 dias gratuitos. Agora faça o login com seus dados.");
-                // Desconecta qualquer sessão pendente para obrigar o login limpo
+                alert("Conta criada com sucesso! Você ganhou 7 dias gratuitos. Faça o login abaixo para entrar.");
                 await supabaseClient.auth.signOut();
-                document.getElementById('authEmail').value = "";
                 document.getElementById('authSenha').value = "";
             }
         } catch (err) {
-            alert("Erro de conexão.");
+            alert("Erro de conexão: " + err.message);
         } finally {
             alternarCarregamentoAuth(false);
         }
     }
 
-    async function fazerLogout() { await supabaseClient.auth.signOut(); }
+    async function fazerLogout() {
+        limparMemoriaLocal();
+        await supabaseClient.auth.signOut();
+    }
 
     async function mostrarAplicacao() {
         document.getElementById('auth-container').style.display = 'none';
@@ -615,29 +965,40 @@
     }
 
     function enviarComprovanteWhatsApp() {
-        const msg = encodeURIComponent(`Olá! Acabei de efetuar o pagamento da assinatura mensal (R$ 22,00) do Calculadora PRO referente à conta: ${utilizadorAtual.email}. Segue meu comprovante.`);
-        window.open(`https://wa.me/5587999998888?text=${msg}`, '_blank');
+        const emailConta = utilizadorAtual ? utilizadorAtual.email : '';
+        const idConta = utilizadorAtual ? utilizadorAtual.id : '';
+        const msg = encodeURIComponent(`Olá! Efetuei o pagamento da mensalidade (R$ 22,00) na chave PIX para renovar 30 dias do Calculadora PRO.\n\nE-mail: ${emailConta}\nID: ${idConta}`);
+        window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank');
     }
 
     // ==========================================
-    // 3. MÓDULO DE CLIENTES E TARIFAS
+    // 3. MÓDULO DE CLIENTES E TARIFAS (ISOLADOS POR CONTA)
     // ==========================================
     async function carregarClientesSupabase() {
+        if (!utilizadorAtual) return;
         const container = document.getElementById('clientesLista');
         const selectRapido = document.getElementById('selectClienteRapido');
 
-        const { data: clientes, error } = await supabaseClient.from('Clientes').select('*').order('nome', { ascending: true });
-        if (error) return;
+        const { data: clientes, error } = await supabaseClient
+            .from('Clientes')
+            .select('*')
+            .eq('motorista_id', utilizadorAtual.id)
+            .order('nome', { ascending: true });
+
+        if (error) {
+            container.innerHTML = `<p style="color: var(--red-alert); text-align: center;">Erro ao carregar clientes: ${error.message}</p>`;
+            return;
+        }
 
         clientesCacheNuvem = clientes || [];
-        let optionsHtml = '<option value="">-- Passageiro Avulso --</option>';
+        let optionsHtml = '<option value="">-- Passageiro Avulso / Digitar Manualmente --</option>';
         clientesCacheNuvem.forEach(c => {
             optionsHtml += `<option value="${c.id}">${c.nome} ${c.telefone ? '(' + c.telefone + ')' : ''}</option>`;
         });
         selectRapido.innerHTML = optionsHtml;
 
         if (clientesCacheNuvem.length === 0) {
-            container.innerHTML = `<p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem;">Nenhum cliente cadastrado.</p>`;
+            container.innerHTML = `<p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem;">Nenhum cliente cadastrado nesta conta.</p>`;
             return;
         }
 
@@ -645,11 +1006,11 @@
         clientesCacheNuvem.forEach(c => {
             html += `
                 <div style="background: var(--bg-input); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; margin-bottom: 8px;">
-                    <div style="display: flex; justify-content: space-between;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
                         <strong style="color: var(--accent-gold); font-size: 0.95rem;">👤 ${c.nome}</strong>
-                        <span style="font-size: 0.8rem; color: var(--text-secondary);">${c.telefone || ''}</span>
+                        <span style="font-size: 0.8rem; color: var(--text-secondary);">${c.telefone || 'Sem telefone'}</span>
                     </div>
-                    ${c.endereco_padrao ? `<div style="font-size: 0.78rem; color: var(--text-primary); margin-top: 4px;">📍 ${c.endereco_padrao}</div>` : ''}
+                    ${c.endereco_padrao ? `<div style="font-size: 0.78rem; color: var(--text-primary); margin-top: 4px;">📍 Padrão: ${c.endereco_padrao}</div>` : ''}
                     <div style="display: flex; gap: 6px; margin-top: 10px;">
                         <button class="btn-mini" style="border-color: var(--accent-gold); color: var(--accent-gold);" onclick="iniciarCorridaParaCliente('${c.id}')">⚡ Iniciar Corrida</button>
                         ${c.telefone ? `<button class="btn-mini" style="border-color: #25D366; color: #25D366;" onclick="abrirWhatsAppDireto('${c.telefone}')">💬 WhatsApp</button>` : ''}
@@ -665,37 +1026,61 @@
         const nome = document.getElementById('novoClienteNome').value.trim();
         const telefone = document.getElementById('novoClienteTel').value.trim();
         const endereco = document.getElementById('novoClienteEnd').value.trim();
-        if (!nome) { alert("Informe o nome do cliente."); return; }
+        if (!nome) { alert("Informe pelo menos o nome do cliente."); return; }
+
+        const btn = document.getElementById('btnSalvarCliente');
+        btn.innerText = "⏳ Salvando...";
+        btn.disabled = true;
 
         const { error } = await supabaseClient.from('Clientes').insert([{
-            motorista_id: utilizadorAtual.id, nome, telefone: telefone || null, endereco_padrao: endereco || null
+            motorista_id: utilizadorAtual.id,
+            nome: nome,
+            telefone: telefone || null,
+            endereco_padrao: endereco || null
         }]);
 
-        if (error) alert("Erro: " + error.message);
+        btn.innerText = "➕ Salvar Cliente na Carteira";
+        btn.disabled = false;
+
+        if (error) alert("Erro ao salvar cliente: " + error.message);
         else {
             document.getElementById('novoClienteNome').value = "";
             document.getElementById('novoClienteTel').value = "";
             document.getElementById('novoClienteEnd').value = "";
-            showToast("Cliente salvo!");
+            showToast("Cliente salvo na carteira!");
             carregarClientesSupabase();
         }
     }
 
     async function excluirClienteNuvem(id) {
-        if (!confirm("Remover cliente?")) return;
-        await supabaseClient.from('Clientes').delete().eq('id', id);
-        showToast("Cliente removido.");
-        carregarClientesSupabase();
+        if (!confirm("Deseja remover este cliente da sua carteira?")) return;
+        const { error } = await supabaseClient
+            .from('Clientes')
+            .delete()
+            .eq('id', id)
+            .eq('motorista_id', utilizadorAtual.id);
+
+        if (error) alert("Erro ao remover: " + error.message);
+        else {
+            showToast("Cliente removido.");
+            carregarClientesSupabase();
+        }
     }
 
     function selecionarClienteNaCalculadora() {
         const clienteId = document.getElementById('selectClienteRapido').value;
-        if (!clienteId) { document.getElementById('clienteNome').value = ""; document.getElementById('clienteTel').value = ""; return; }
+        if (!clienteId) {
+            document.getElementById('clienteNome').value = "";
+            document.getElementById('clienteTel').value = "";
+            return;
+        }
         const c = clientesCacheNuvem.find(x => x.id === clienteId);
         if (c) {
             document.getElementById('clienteNome').value = c.nome || "";
             document.getElementById('clienteTel').value = c.telefone || "";
-            if (c.endereco_padrao && !document.getElementById('origem').value) document.getElementById('origem').value = c.endereco_padrao;
+            if (c.endereco_padrao && !document.getElementById('origem').value) {
+                document.getElementById('origem').value = c.endereco_padrao;
+            }
         }
     }
 
@@ -703,32 +1088,41 @@
         switchTab('calculadora');
         document.getElementById('selectClienteRapido').value = id;
         selecionarClienteNaCalculadora();
+        showToast("Dados do cliente preenchidos!");
     }
 
     function abrirWhatsAppDireto(tel) {
         let t = tel.replace(/\D/g, '');
-        if (t.length >= 10 && !tel.startsWith('+')) t = '55' + t;
+        if (t.length >= 10 && t.length <= 11 && !tel.startsWith('+')) t = '55' + t;
         window.open(`https://wa.me/${t}`, '_blank');
     }
 
     async function carregarPerfilETarifasNuvem() {
+        if (!utilizadorAtual) return;
         try {
-            const { data, error } = await supabaseClient.from('Motoristas').select('nome, telefone, cidade_padrao, config_tarifas').eq('id', utilizadorAtual.id).maybeSingle();
+            const { data, error } = await supabaseClient
+                .from('Motoristas')
+                .select('nome, telefone, cidade_padrao, config_tarifas')
+                .eq('id', utilizadorAtual.id)
+                .maybeSingle();
+
             if (!error && data) {
                 perfilMotorista.nome = data.nome || "";
                 perfilMotorista.telefone = data.telefone || "";
-                perfilMotorista.cidadePadrao = data.cidade_padrao || "Juazeiro e Petrolina";
+                perfilMotorista.cidadePadrao = data.cidade_padrao || "";
                 config = { ...DEFAULT_CONFIG, ...(data.config_tarifas || {}) };
             }
-        } catch (e) {}
+        } catch (e) {
+            console.error("Erro ao carregar perfil:", e);
+        }
         atualizarInterfacePerfilETarifas();
     }
 
     function atualizarInterfacePerfilETarifas() {
         document.getElementById('headerNomeMotorista').innerText = `🚘 ${perfilMotorista.nome || 'Painel do Motorista'}`;
-        document.getElementById('cfgNomeMotorista').value = perfilMotorista.nome;
-        document.getElementById('cfgTelefoneMotorista').value = perfilMotorista.telefone;
-        document.getElementById('cfgCidadePadrao').value = perfilMotorista.cidadePadrao;
+        document.getElementById('cfgNomeMotorista').value = perfilMotorista.nome || "";
+        document.getElementById('cfgTelefoneMotorista').value = perfilMotorista.telefone || "";
+        document.getElementById('cfgCidadePadrao').value = perfilMotorista.cidadePadrao || "";
 
         document.getElementById('cfgTaxaBase').value = config.taxaBase;
         document.getElementById('cfgValorKm').value = config.valorKm;
@@ -741,40 +1135,55 @@
     }
 
     async function salvarConfiguracoesNuvem() {
+        const btn = document.getElementById('btnSalvarTarifas');
+        btn.innerText = "⏳ Salvando na nuvem...";
+        btn.disabled = true;
+
         perfilMotorista.nome = document.getElementById('cfgNomeMotorista').value.trim();
         perfilMotorista.telefone = document.getElementById('cfgTelefoneMotorista').value.trim();
-        perfilMotorista.cidadePadrao = document.getElementById('cfgCidadePadrao').value.trim() || "Juazeiro e Petrolina";
+        perfilMotorista.cidadePadrao = document.getElementById('cfgCidadePadrao').value.trim();
 
         config = {
-            taxaBase: parseFloat(document.getElementById('cfgTaxaBase').value) || 0,
-            valorKm: parseFloat(document.getElementById('cfgValorKm').value) || 0,
-            valorMinuto: parseFloat(document.getElementById('cfgValorMinuto').value) || 0,
-            valorEspera: parseFloat(document.getElementById('cfgValorEspera').value) || 0,
-            precoGasolina: parseFloat(document.getElementById('cfgPrecoGasolina').value) || 0,
-            kmLiter: parseFloat(document.getElementById('cfgKmLiter').value) || 1,
-            manutencaoHora: parseFloat(document.getElementById('cfgManutencaoHora').value) || 0,
-            taxaTerceiro: parseFloat(document.getElementById('cfgTaxaTerceiro').value) || 0
+            taxaBase: Math.max(0, parseFloat(document.getElementById('cfgTaxaBase').value) || 0),
+            valorKm: Math.max(0, parseFloat(document.getElementById('cfgValorKm').value) || 0),
+            valorMinuto: Math.max(0, parseFloat(document.getElementById('cfgValorMinuto').value) || 0),
+            valorEspera: Math.max(0, parseFloat(document.getElementById('cfgValorEspera').value) || 0),
+            precoGasolina: Math.max(0, parseFloat(document.getElementById('cfgPrecoGasolina').value) || 0),
+            kmLiter: Math.max(1, parseFloat(document.getElementById('cfgKmLiter').value) || 1),
+            manutencaoHora: Math.max(0, parseFloat(document.getElementById('cfgManutencaoHora').value) || 0),
+            taxaTerceiro: Math.max(0, parseFloat(document.getElementById('cfgTaxaTerceiro').value) || 0)
         };
 
-        await supabaseClient.from('Motoristas').upsert({
-            id: utilizadorAtual.id, email: utilizadorAtual.email,
-            nome: perfilMotorista.nome, telefone: perfilMotorista.telefone,
-            cidade_padrao: perfilMotorista.cidadePadrao, config_tarifas: config
+        const { error } = await supabaseClient.from('Motoristas').upsert({
+            id: utilizadorAtual.id,
+            email: utilizadorAtual.email,
+            nome: perfilMotorista.nome || null,
+            telefone: perfilMotorista.telefone || null,
+            cidade_padrao: perfilMotorista.cidadePadrao || null,
+            config_tarifas: config
         });
 
-        atualizarInterfacePerfilETarifas();
-        showToast("Tarifas salvas na nuvem!");
+        btn.innerText = "☁️ Salvar Perfil e Tarifas na Nuvem";
+        btn.disabled = false;
+
+        if (error) alert("Erro ao salvar configurações: " + error.message);
+        else {
+            atualizarInterfacePerfilETarifas();
+            showToast("Perfil e tarifas salvos na nuvem!");
+        }
     }
 
     // ==========================================
-    // 4. CÁLCULO E HISTÓRICO
+    // 4. CÁLCULO DE CORRIDA E HISTÓRICO ISOLADO
     // ==========================================
     function toggleJustificativa() {
         const d = parseFloat(document.getElementById('dinamica').value) || 1;
         document.getElementById('boxJustificativa').style.display = d > 1.0 ? 'block' : 'none';
     }
 
-    function fmtMoney(v) { return (Number(v) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
+    function fmtMoney(v) {
+        return (Number(v) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
 
     function calcularEExibir() {
         const distancia = parseFloat(document.getElementById('distancia').value) || 0;
@@ -784,6 +1193,7 @@
         const dinamica = parseFloat(document.getElementById('dinamica').value) || 1.0;
         const extras = parseFloat(document.getElementById('extras').value) || 0;
         const desconto = parseFloat(document.getElementById('desconto').value) || 0;
+        const motivoDinamica = document.getElementById('motivoDinamica').value || 'Condições especiais do trajeto/horário';
 
         const clienteId = document.getElementById('selectClienteRapido').value || null;
         const clienteNome = document.getElementById('clienteNome').value.trim();
@@ -794,69 +1204,155 @@
         const dataInput = document.getElementById('dataCorrida').value;
         const horaInput = document.getElementById('horaCorrida').value;
 
-        if (distancia <= 0 || tempo <= 0) { alert("Informe distância e tempo válidos."); return; }
+        if (distancia <= 0 || tempo <= 0) {
+            alert("Por favor, informe valores válidos e positivos para distância e tempo.");
+            return;
+        }
 
         const kmEfetivo = distancia * (1 + fatorRetorno);
         const tempoEfetivo = tempo * (1 + fatorRetorno);
-        const subtotal = config.taxaBase + (kmEfetivo * config.valorKm) + (tempoEfetivo * config.valorMinuto) + (tempoEspera * config.valorEspera);
-        const valDinamica = subtotal * dinamica;
-        const valTerceiro = valDinamica * (config.taxaTerceiro / 100);
 
-        let precoFinal = valDinamica + valTerceiro + extras - desconto;
-        if (precoFinal < 0) precoFinal = 0;
+        const custoDistancia = kmEfetivo * config.valorKm;
+        const custoTempo = tempoEfetivo * config.valorMinuto;
+        const custoEspera = tempoEspera * config.valorEspera;
 
-        const gas = (kmEfetivo / config.kmLiter) * config.precoGasolina;
-        const manut = ((tempoEfetivo + tempoEspera) / 60) * config.manutencaoHora;
-        const lucro = precoFinal - gas - manut - valTerceiro - extras;
+        const subtotalBase = config.taxaBase + custoDistancia + custoTempo + custoEspera;
+        const valorComDinamica = subtotalBase * dinamica;
+        const acrescimoDinamica = valorComDinamica - subtotalBase;
+        const valorTerceiro = valorComDinamica * (config.taxaTerceiro / 100);
 
-        document.getElementById('resValorTotal').innerText = fmtMoney(precoFinal);
-        document.getElementById('resResumoTrajeto').innerText = `${distancia} km • ${tempo} min`;
-        document.getElementById('statLucro').innerText = fmtMoney(lucro);
-        document.getElementById('statGasolina').innerText = fmtMoney(gas);
-        document.getElementById('statManutencao').innerText = fmtMoney(manut);
-        document.getElementById('statTerceiro').innerText = fmtMoney(valTerceiro);
+        let precoFinalCliente = valorComDinamica + valorTerceiro + extras - desconto;
+        if (precoFinalCliente < 0) precoFinalCliente = 0;
 
-        desenharGrafico(lucro, gas, manut, valTerceiro);
+        const gastoCombustivel = (kmEfetivo / config.kmLiter) * config.precoGasolina;
+        const gastoManutencao = ((tempoEfetivo + tempoEspera) / 60) * config.manutencaoHora;
+        const custoTotalOperacional = gastoCombustivel + gastoManutencao + valorTerceiro;
+        const lucroLiquidoReal = precoFinalCliente - custoTotalOperacional - extras;
+
+        document.getElementById('resValorTotal').innerText = fmtMoney(precoFinalCliente);
+        let txtResumo = `${distancia} km • ${tempo} min`;
+        if (tempoEspera > 0) txtResumo += ` (+${tempoEspera}m espera)`;
+        if (fatorRetorno > 0) txtResumo += ` (Retorno Incluído)`;
+        document.getElementById('resResumoTrajeto').innerText = txtResumo;
+
+        document.getElementById('statLucro').innerText = fmtMoney(lucroLiquidoReal);
+        document.getElementById('statGasolina').innerText = fmtMoney(gastoCombustivel);
+        document.getElementById('statManutencao').innerText = fmtMoney(gastoManutencao);
+        document.getElementById('statTerceiro').innerText = fmtMoney(valorTerceiro);
+
+        desenharGrafico(lucroLiquidoReal, gastoCombustivel, gastoManutencao, valorTerceiro);
 
         let dataStr = "A combinar";
         let isoDataHora = new Date().toISOString();
         if (dataInput && horaInput) {
-            dataStr = `${dataInput.split('-').reverse().join('/')} às ${horaInput}`;
+            const p = dataInput.split('-');
+            const d = new Date(p[0], p[1] - 1, p[2]);
+            const dias = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+            dataStr = `${p[2]}/${p[1]}/${p[0]} às ${horaInput} (${dias[d.getDay()]})`;
             isoDataHora = `${dataInput}T${horaInput}:00`;
         }
 
-        const nomeMot = perfilMotorista.nome || "Motorista";
-        let r = `===============================\n🚘 *ORÇAMENTO DE CORRIDA*\n===============================\n`;
-        if (clienteNome) r += `👤 *Passageiro:* ${clienteNome}\n`;
-        r += `📅 ${dataStr}\n📍 De: ${origem}\n📍 Para: ${destino}\n📏 ${distancia} KM (${tempo} min)\n\n💵 *VALOR: ${fmtMoney(precoFinal)}*\n===============================\n📲 *${nomeMot}*`;
+        const nomeAssinatura = perfilMotorista.nome || "Motorista Particular";
+
+        let r = `===============================\n`;
+        r += `🚘 *ORÇAMENTO DE CORRIDA PARTICULAR*\n`;
+        r += `===============================\n`;
+        r += `*Motorista:* ${nomeAssinatura}\n`;
+        if (clienteNome) r += `👤 *Passageiro(a):* ${clienteNome}\n`;
+        r += `📅 *Data/Hora:* ${dataStr}\n\n`;
+
+        if (origem || destino) {
+            r += `📍 *Trajeto:*\n`;
+            if (origem) r += `• Origem: ${origem}\n`;
+            if (destino) r += `• Destino: ${destino}\n\n`;
+        }
+
+        r += `📏 *Estimativa do Percurso:*\n`;
+        r += `• Distância: ${distancia} KM\n`;
+        r += `• Tempo Estimado: ${tempo} Minutos\n`;
+        if (tempoEspera > 0) r += `• Tempo de Espera Incluído: ${tempoEspera} Min\n`;
+        
+        r += `\n💰 *Detalhamento do Valor:*\n`;
+        r += `• Valor da Corrida: ${fmtMoney(subtotalBase + valorTerceiro)}\n`;
+
+        if (dinamica > 1.0) {
+            r += `• Adicional Dinâmico (${dinamica}x): ${fmtMoney(acrescimoDinamica)}\n`;
+            r += `  _(Motivo: ${motivoDinamica})_\n`;
+        }
+
+        if (extras > 0) r += `• Pedágio / Custos Extras: ${fmtMoney(extras)}\n`;
+        if (desconto > 0) r += `• Desconto Especial: -${fmtMoney(desconto)}\n`;
+
+        r += `\n💵 *VALOR TOTAL: ${fmtMoney(precoFinalCliente)}*\n`;
+        r += `===============================\n`;
+        r += `_Agendamento garantido com pontualidade, conforto e segurança._\n`;
+        r += `📲 *${nomeAssinatura}*`;
 
         textoReciboAtual = r;
         document.getElementById('receiptText').innerText = r;
         document.getElementById('resultCard').style.display = 'block';
 
         ultimaCorridaNuvem = {
-            motorista_id: utilizadorAtual.id, cliente_id: clienteId, cliente_nome: clienteNome || null,
-            origem: origem || 'N/A', destino: destino || 'N/A', data_hora: isoDataHora,
-            distancia, tempo, valor: Number(precoFinal.toFixed(2)), lucro: Number(lucro.toFixed(2)),
-            combustivel: Number(gas.toFixed(2)), manutencao: Number(manut.toFixed(2)),
-            terceiro: Number(valTerceiro.toFixed(2)), extras, desconto, status: statusCorrida, status_pagamento: statusPagamento
+            motorista_id: utilizadorAtual.id,
+            cliente_id: clienteId,
+            cliente_nome: clienteNome || null,
+            origem: origem || 'Não especificada',
+            destino: destino || 'Não especificado',
+            data_hora: isoDataHora,
+            distancia: distancia,
+            tempo: tempo,
+            valor: Number(precoFinalCliente.toFixed(2)),
+            lucro: Number(lucroLiquidoReal.toFixed(2)),
+            combustivel: Number(gastoCombustivel.toFixed(2)),
+            manutencao: Number(gastoManutencao.toFixed(2)),
+            terceiro: Number(valorTerceiro.toFixed(2)),
+            extras: Number(extras.toFixed(2)),
+            desconto: Number(desconto.toFixed(2)),
+            status: statusCorrida,
+            status_pagamento: statusPagamento
         };
     }
 
     async function gravarCorridaSistema() {
-        if (!ultimaCorridaNuvem) return;
+        if (!ultimaCorridaNuvem || !utilizadorAtual) return;
+        const btn = document.getElementById('btnSalvarNuvem');
+        btn.innerText = "⏳ Salvando na nuvem...";
+        btn.disabled = true;
+
+        ultimaCorridaNuvem.motorista_id = utilizadorAtual.id;
         ultimaCorridaNuvem.status = document.getElementById('statusCorrida').value;
         ultimaCorridaNuvem.status_pagamento = document.getElementById('statusPagamento').value;
 
         const { error } = await supabaseClient.from('Corridas').insert([ultimaCorridaNuvem]);
-        if (error) alert("Erro: " + error.message);
-        else { showToast("Corrida salva na nuvem!"); carregarHistoricoSupabase(); }
+
+        btn.innerText = "💾 Guardar Corrida na Nuvem";
+        btn.disabled = false;
+
+        if (error) alert("Erro ao salvar corrida: " + error.message);
+        else {
+            showToast("Corrida salva na nuvem!");
+            carregarHistoricoSupabase();
+        }
     }
 
     async function carregarHistoricoSupabase() {
+        if (!utilizadorAtual) return;
         const container = document.getElementById('historicoLista');
-        const { data, error } = await supabaseClient.from('Corridas').select('*').order('data_hora', { ascending: false }).limit(500);
-        if (error) return;
+        container.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">Sincronizando com a nuvem...</p>';
+
+        // Filtra estritamente pelo motorista_id da conta logada
+        const { data, error } = await supabaseClient
+            .from('Corridas')
+            .select('*')
+            .eq('motorista_id', utilizadorAtual.id)
+            .order('data_hora', { ascending: false })
+            .limit(500);
+
+        if (error) {
+            container.innerHTML = `<p style="color: var(--red-alert); text-align: center;">Erro: ${error.message}</p>`;
+            return;
+        }
+
         corridasCacheNuvem = data || [];
         renderizarListaHistorico();
     }
@@ -868,35 +1364,52 @@
         let totalPago = 0, totalPendente = 0;
         corridasCacheNuvem.forEach(c => {
             const v = Number(c.valor) || 0;
-            if (c.status_pagamento === 'pago') totalPago += v; else totalPendente += v;
+            if (c.status_pagamento === 'pago') totalPago += v;
+            else totalPendente += v;
         });
 
         document.getElementById('resumoTotalPago').innerText = fmtMoney(totalPago);
         document.getElementById('resumoTotalPendente').innerText = fmtMoney(totalPendente);
 
         let lista = corridasCacheNuvem;
-        if (filtroPag !== 'todos') lista = corridasCacheNuvem.filter(c => (c.status_pagamento || 'pendente') === filtroPag);
+        if (filtroPag !== 'todos') {
+            lista = corridasCacheNuvem.filter(c => (c.status_pagamento || 'pendente') === filtroPag);
+        }
 
-        if (lista.length === 0) { container.innerHTML = `<p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem; margin-top: 20px;">Nenhuma corrida encontrada.</p>`; return; }
+        if (lista.length === 0) {
+            container.innerHTML = `<p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem; margin-top: 20px;">Nenhuma corrida encontrada nesta conta.</p>`;
+            return;
+        }
 
         let html = '';
-        lista.slice(0, 20).forEach(item => {
-            const dataFmt = item.data_hora ? new Date(item.data_hora).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : '';
+        lista.slice(0, 25).forEach(item => {
+            const dataFmt = item.data_hora ? new Date(item.data_hora).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : 'Sem data';
+            const lucroVal = Number(item.lucro) || 0;
             const isPago = item.status_pagamento === 'pago';
+            const isAgendada = item.status === 'agendada';
+
             html += `
                 <div style="background: var(--bg-input); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; margin-bottom: 10px;">
-                    <div style="display: flex; justify-content: space-between;">
-                        <span style="font-weight: 800; color: var(--accent-gold);">${fmtMoney(item.valor)}</span>
-                        <span class="badge ${isPago ? 'badge-pago' : 'badge-pendente'}">${isPago ? '💵 Pago' : '⏳ Pendente'}</span>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-weight: 800; font-size: 1.05rem; color: var(--accent-gold);">${fmtMoney(item.valor)}</span>
+                        <div style="display: flex; gap: 6px;">
+                            <span class="badge ${isAgendada ? 'badge-agendada' : 'badge-concluida'}">${isAgendada ? '📅 Agendada' : '✅ Concluída'}</span>
+                            <span class="badge ${isPago ? 'badge-pago' : 'badge-pendente'}">${isPago ? '💵 Pago' : '⏳ Pendente'}</span>
+                        </div>
                     </div>
-                    ${item.cliente_nome ? `<div style="font-size: 0.8rem; color: var(--accent-gold); margin-top: 4px;">👤 ${item.cliente_nome}</div>` : ''}
-                    <div style="font-size: 0.82rem; margin-top: 4px;">${item.origem} ➔ ${item.destino}</div>
+                    ${item.cliente_nome ? `<div style="font-size: 0.8rem; color: var(--accent-gold); margin-top: 5px; font-weight: 600;">👤 Cliente: ${item.cliente_nome}</div>` : ''}
+                    <div style="font-size: 0.82rem; color: var(--text-primary); margin-top: 4px;">${item.origem} ➔ ${item.destino}</div>
                     <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-secondary); margin-top: 4px;">
-                        <span>${dataFmt} • ${item.distancia} km</span>
-                        <span style="color: var(--green-success);">Lucro: ${fmtMoney(item.lucro)}</span>
+                        <span>📅 ${dataFmt} • ${item.distancia || 0} km</span>
+                        <span style="color: ${lucroVal >= 0 ? 'var(--green-success)' : 'var(--red-alert)'}; font-weight: bold;">Lucro: ${fmtMoney(lucroVal)}</span>
                     </div>
-                    <div style="display: flex; gap: 6px; margin-top: 8px; padding-top: 6px; border-top: 1px dashed var(--border-color);">
-                        <button class="btn-mini" onclick="alternarPagamentoCorrida('${item.id}', '${isPago ? 'pendente' : 'pago'}')">${isPago ? 'Marcar Pendente' : 'Receber (Pago)'}</button>
+                    <div style="display: flex; gap: 6px; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--border-color);">
+                        <button class="btn-mini" onclick="alternarPagamentoCorrida('${item.id}', '${isPago ? 'pendente' : 'pago'}')" style="border-color: ${isPago ? 'var(--border-color)' : 'var(--green-success)'}; color: ${isPago ? 'var(--text-secondary)' : 'var(--green-success)'};">
+                            ${isPago ? '↩️ Marcar Pendente' : '✅ Receber (Pago)'}
+                        </button>
+                        <button class="btn-mini" onclick="alternarStatusViagem('${item.id}', '${isAgendada ? 'concluida' : 'agendada'}')">
+                            ${isAgendada ? '🏁 Concluir Viagem' : '📅 Voltar p/ Agenda'}
+                        </button>
                         <button class="btn-mini" style="border-color: var(--red-alert); color: var(--red-alert); margin-left: auto;" onclick="excluirCorridaNuvem('${item.id}')">🗑️</button>
                     </div>
                 </div>
@@ -905,93 +1418,304 @@
         container.innerHTML = html;
     }
 
-    async function alternarPagamentoCorrida(id, status) {
-        await supabaseClient.from('Corridas').update({ status_pagamento: status }).eq('id', id);
-        carregarHistoricoSupabase();
+    async function alternarPagamentoCorrida(id, novoStatusPag) {
+        const { error } = await supabaseClient
+            .from('Corridas')
+            .update({ status_pagamento: novoStatusPag })
+            .eq('id', id)
+            .eq('motorista_id', utilizadorAtual.id);
+
+        if (error) alert("Erro ao atualizar: " + error.message);
+        else {
+            showToast(novoStatusPag === 'pago' ? "Pagamento recebido!" : "Marcado como pendente!");
+            carregarHistoricoSupabase();
+        }
+    }
+
+    async function alternarStatusViagem(id, novoStatus) {
+        const { error } = await supabaseClient
+            .from('Corridas')
+            .update({ status: novoStatus })
+            .eq('id', id)
+            .eq('motorista_id', utilizadorAtual.id);
+
+        if (error) alert("Erro ao atualizar: " + error.message);
+        else {
+            showToast("Status da viagem atualizado!");
+            carregarHistoricoSupabase();
+        }
     }
 
     async function excluirCorridaNuvem(id) {
-        if (!confirm("Excluir corrida?")) return;
-        await supabaseClient.from('Corridas').delete().eq('id', id);
-        carregarHistoricoSupabase();
+        if (!confirm("Deseja realmente excluir esta corrida do histórico?")) return;
+        const { error } = await supabaseClient
+            .from('Corridas')
+            .delete()
+            .eq('id', id)
+            .eq('motorista_id', utilizadorAtual.id);
+
+        if (error) alert("Erro ao excluir: " + error.message);
+        else {
+            showToast("Corrida excluída!");
+            carregarHistoricoSupabase();
+        }
+    }
+
+    function obterCorridasFiltradas() {
+        const filtroDataInput = document.getElementById('filtroDataPDF').value;
+        if (!filtroDataInput) return corridasCacheNuvem;
+        return corridasCacheNuvem.filter(item => item.data_hora && item.data_hora.startsWith(filtroDataInput));
     }
 
     function exportarPDFReal() {
-        const hist = corridasCacheNuvem;
-        if (hist.length === 0) { showToast("Sem dados."); return; }
-        const { jsPDF } = window.jspdf; const doc = new jsPDF();
-        doc.text("Relatorio Financeiro", 14, 20);
-        let y = 30;
-        hist.forEach(i => {
-            doc.text(`${i.origem} -> ${i.destino} : ${fmtMoney(i.valor)}`, 14, y);
-            y += 8;
+        const hist = obterCorridasFiltradas();
+        const filtroDataInput = document.getElementById('filtroDataPDF').value;
+
+        if (hist.length === 0) {
+            showToast("Nenhuma corrida encontrada para o período.");
+            return;
+        }
+
+        const btn = document.getElementById('btnPdf');
+        btn.innerText = "⏳ Gerando PDF...";
+        btn.disabled = true;
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('p', 'mm', 'a4');
+
+        let totalBruto = 0, totalLucro = 0, totalGas = 0, totalManut = 0, totalTerc = 0;
+
+        const tableBody = hist.map(item => {
+            const valor = Number(item.valor) || 0;
+            const lucro = Number(item.lucro) || 0;
+            const gas = Number(item.combustivel) || 0;
+            const manut = Number(item.manutencao) || 0;
+            const terc = Number(item.terceiro) || 0;
+
+            totalBruto += valor;
+            totalLucro += lucro;
+            totalGas += gas;
+            totalManut += manut;
+            totalTerc += terc;
+
+            const clienteTxt = item.cliente_nome ? `[${item.cliente_nome}]\n` : '';
+            const trajeto = `${clienteTxt}${item.origem} ➔ ${item.destino}`;
+            const distTempo = `${item.distancia || 0} km\n${item.tempo || 0} min`;
+            const statusPag = item.status_pagamento === 'pago' ? 'PAGO' : 'PENDENTE';
+            const custosDetalhados = `Gas: ${fmtMoney(gas)}\nMan: ${fmtMoney(manut)}\nPag: ${statusPag}`;
+            const dataCurta = item.data_hora ? new Date(item.data_hora).toLocaleDateString('pt-BR') : '--';
+
+            return [dataCurta, trajeto, distTempo, custosDetalhados, fmtMoney(valor), fmtMoney(lucro)];
         });
-        doc.save("Relatorio_Corridas.pdf");
+
+        const nomeMotoristaStr = perfilMotorista.nome || utilizadorAtual.email;
+
+        doc.setFontSize(16);
+        doc.setTextColor(245, 158, 11);
+        doc.text(`Relatório Financeiro - ${nomeMotoristaStr}`, 14, 20);
+
+        doc.setFontSize(10);
+        doc.setTextColor(100, 100, 100);
+        const periodoStr = filtroDataInput ? `Data Filtrada: ${filtroDataInput.split('-').reverse().join('/')}` : "Período: Todo o Histórico";
+        doc.text(`${periodoStr} | Gerado em: ${new Date().toLocaleString('pt-BR')}`, 14, 26);
+
+        doc.setFillColor(245, 245, 245);
+        doc.rect(14, 32, 182, 25, 'F');
+
+        doc.setFontSize(11);
+        doc.setTextColor(50, 50, 50);
+        doc.text("Faturamento Bruto", 20, 42);
+        doc.setFontSize(14);
+        doc.setTextColor(18, 18, 20);
+        doc.setFont("helvetica", "bold");
+        doc.text(fmtMoney(totalBruto), 20, 50);
+
+        doc.setFontSize(11);
+        doc.setTextColor(50, 50, 50);
+        doc.setFont("helvetica", "normal");
+        doc.text("Custos Operacionais", 85, 42);
+        doc.setFontSize(14);
+        doc.setTextColor(239, 68, 68);
+        doc.setFont("helvetica", "bold");
+        doc.text(fmtMoney(totalGas + totalManut + totalTerc), 85, 50);
+
+        doc.setFontSize(11);
+        doc.setTextColor(50, 50, 50);
+        doc.setFont("helvetica", "normal");
+        doc.text("Lucro Líquido Real", 150, 42);
+        doc.setFontSize(14);
+        doc.setTextColor(16, 185, 129);
+        doc.setFont("helvetica", "bold");
+        doc.text(fmtMoney(totalLucro), 150, 50);
+
+        doc.autoTable({
+            startY: 65,
+            head: [['Data', 'Cliente / Trajeto', 'Dist/Tempo', 'Custos / Status', 'Valor Bruto', 'Lucro Real']],
+            body: tableBody,
+            theme: 'grid',
+            headStyles: { fillColor: [18, 18, 20], textColor: [255, 255, 255], fontStyle: 'bold' },
+            styles: { fontSize: 8, cellPadding: 3, valign: 'middle' },
+            columnStyles: {
+                0: { cellWidth: 20 },
+                1: { cellWidth: 50 },
+                2: { cellWidth: 20, halign: 'center' },
+                3: { cellWidth: 35 },
+                4: { cellWidth: 28, halign: 'right', fontStyle: 'bold' },
+                5: { cellWidth: 25, halign: 'right', fontStyle: 'bold', textColor: [16, 185, 129] }
+            },
+            alternateRowStyles: { fillColor: [250, 250, 250] },
+            margin: { top: 15, left: 14, right: 14 }
+        });
+
+        doc.save(`Relatorio_Corridas_${filtroDataInput || 'Completo'}.pdf`);
+        btn.innerHTML = "📄 Gerar Relatório Financeiro (PDF)";
+        btn.disabled = false;
+        showToast("Relatório PDF gerado!");
     }
 
     function exportarCSV() {
-        let csv = "Data;Origem;Destino;Valor;Lucro\n";
-        corridasCacheNuvem.forEach(i => csv += `"${i.data_hora}";"${i.origem}";"${i.destino}";"${i.valor}";"${i.lucro}"\n`);
+        if (corridasCacheNuvem.length === 0) {
+            showToast("Não há dados para exportar.");
+            return;
+        }
+        let csv = "\uFEFFData;Cliente;Origem;Destino;Status Viagem;Status Pagamento;Distancia;Tempo;Lucro Liquido;Valor Final\n";
+        corridasCacheNuvem.forEach(item => {
+            const dataFmt = item.data_hora ? new Date(item.data_hora).toLocaleString('pt-BR') : '';
+            const lucroFmt = (Number(item.lucro) || 0).toFixed(2).replace('.', ',');
+            const valorFmt = (Number(item.valor) || 0).toFixed(2).replace('.', ',');
+            csv += `"${dataFmt}";"${item.cliente_nome || 'Avulso'}";"${item.origem}";"${item.destino}";"${item.status || ''}";"${item.status_pagamento || ''}";"${item.distancia || 0}";"${item.tempo || 0}";"${lucroFmt}";"${valorFmt}"\n`;
+        });
         const a = document.createElement("a");
         a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
-        a.download = "corridas.csv"; a.click();
+        a.download = "historico_corridas.csv";
+        a.click();
     }
 
+    // ==========================================
+    // 5. GRÁFICO, WHATSAPP E GPS CORRIGIDO (3 NÍVEIS)
+    // ==========================================
     function desenharGrafico(lucro, gas, manut, terceiro) {
         const canvas = document.getElementById('lucroChart');
         const ctx = canvas.getContext('2d');
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+
         const l = lucro > 0 ? lucro : 0;
         const total = l + gas + manut + terceiro;
         if (total <= 0) return;
-        const data = [{ v: l, c: '#10B981' }, { v: gas, c: '#F87171' }, { v: manut, c: '#FBBF24' }, { v: terceiro, c: '#60A5FA' }];
+
+        const data = [
+            { v: l, c: '#10B981' },
+            { v: gas, c: '#F87171' },
+            { v: manut, c: '#FBBF24' },
+            { v: terceiro, c: '#60A5FA' }
+        ];
         let start = -0.5 * Math.PI;
         const cx = canvas.width / 2, cy = canvas.height / 2, r = Math.min(cx, cy) - 15;
+
         data.forEach(s => {
             if (s.v <= 0) return;
             const angle = (s.v / total) * 2 * Math.PI;
-            ctx.beginPath(); ctx.arc(cx, cy, r, start, start + angle);
+            ctx.beginPath();
+            ctx.arc(cx, cy, r, start, start + angle);
             ctx.arc(cx, cy, r - 28, start + angle, start, true);
-            ctx.closePath(); ctx.fillStyle = s.c; ctx.fill();
+            ctx.closePath();
+            ctx.fillStyle = s.c;
+            ctx.fill();
             start += angle;
         });
+
+        ctx.fillStyle = '#F3F3F5';
+        ctx.font = 'bold 12px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('Divisão', cx, cy - 8);
+
+        ctx.fillStyle = lucro > 0 ? '#10B981' : '#EF4444';
+        ctx.font = 'bold 13px sans-serif';
+        const pct = lucro > 0 ? Math.round((lucro / total) * 100) : 0;
+        ctx.fillText(lucro > 0 ? `${pct}% Lucro` : 'Prejuízo', cx, cy + 10);
     }
 
     function enviarWhatsApp() {
-        let tel = document.getElementById('clienteTel').value.replace(/\D/g, '');
-        if (tel.length >= 10 && !tel.startsWith('+')) tel = '55' + tel;
+        if (!textoReciboAtual) return;
+        let telRaw = document.getElementById('clienteTel').value.trim();
+        let tel = telRaw.replace(/\D/g, '');
+        if (tel.length >= 10 && tel.length <= 11 && !telRaw.startsWith('+')) tel = '55' + tel;
         window.open(tel ? `https://wa.me/${tel}?text=${encodeURIComponent(textoReciboAtual)}` : `https://api.whatsapp.com/send?text=${encodeURIComponent(textoReciboAtual)}`, '_blank');
     }
 
-    function copiarTexto() { navigator.clipboard.writeText(textoReciboAtual).then(() => showToast("Copiado!")); }
+    function copiarTexto() {
+        if (!textoReciboAtual) return;
+        navigator.clipboard.writeText(textoReciboAtual).then(() => showToast("Orçamento copiado!"));
+    }
+
+    async function buscarCoordenadasNominatim(enderecoDigitado, cidadeContexto) {
+        // 1ª Tentativa: Com a cidade padrão (se for apenas 1 cidade simples e o utilizador não digitou vírgula)
+        if (cidadeContexto && !enderecoDigitado.includes(',') && !cidadeContexto.toLowerCase().includes(' e ')) {
+            const queryComCidade = `${enderecoDigitado}, ${cidadeContexto}`;
+            const r1 = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(queryComCidade)}`);
+            const d1 = await r1.json();
+            if (d1 && d1.length > 0) return d1[0];
+        }
+
+        // 2ª Tentativa: Endereço exato como digitado (focado no Brasil)
+        const r2 = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=br&q=${encodeURIComponent(enderecoDigitado)}`);
+        const d2 = await r2.json();
+        if (d2 && d2.length > 0) return d2[0];
+
+        // 3ª Tentativa: Busca direta global (idêntica ao index original)
+        const r3 = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(enderecoDigitado)}`);
+        const d3 = await r3.json();
+        if (d3 && d3.length > 0) return d3[0];
+
+        return null;
+    }
 
     async function calcularRotaOSM() {
-        let origem = document.getElementById('origem').value.trim();
-        let destino = document.getElementById('destino').value.trim();
-        if (!origem || !destino) { alert("Preencha origem e destino."); return; }
+        const origem = document.getElementById('origem').value.trim();
+        const destino = document.getElementById('destino').value.trim();
+        const btn = document.getElementById('btnRota');
 
-        const suf = perfilMotorista.cidadePadrao ? `, ${perfilMotorista.cidadePadrao}` : "";
-        if (!origem.toLowerCase().includes(suf.toLowerCase().trim())) origem += suf;
-        if (!destino.toLowerCase().includes(suf.toLowerCase().trim())) destino += suf;
+        if (!origem || !destino) {
+            alert("Por favor, preencha os campos Origem e Destino primeiro.");
+            return;
+        }
+
+        btn.innerText = "⏳ A calcular rota...";
+        btn.disabled = true;
 
         try {
-            const r1 = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(origem)}`);
-            const d1 = await r1.json();
-            const r2 = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(destino)}`);
-            const d2 = await r2.json();
+            const cidadeCtx = (perfilMotorista.cidadePadrao || "").trim();
 
-            const r = await fetch(`https://router.project-osrm.org/route/v1/driving/${d1[0].lon},${d1[0].lat};${d2[0].lon},${d2[0].lat}?overview=false`);
-            const data = await r.json();
+            const coordOrigem = await buscarCoordenadasNominatim(origem, cidadeCtx);
+            if (!coordOrigem) throw new Error(`Endereço de origem não encontrado: "${origem}".`);
 
-            document.getElementById('distancia').value = (data.routes[0].distance / 1000).toFixed(1);
-            document.getElementById('tempo').value = Math.ceil(data.routes[0].duration / 60);
-            showToast("Rota calculada!");
-        } catch (e) { alert("Erro ao calcular rota."); }
+            const coordDestino = await buscarCoordenadasNominatim(destino, cidadeCtx);
+            if (!coordDestino) throw new Error(`Endereço de destino não encontrado: "${destino}".`);
+
+            const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${coordOrigem.lon},${coordOrigem.lat};${coordDestino.lon},${coordDestino.lat}?overview=false`;
+            const resRota = await fetch(osrmUrl);
+            const dataRota = await resRota.json();
+
+            if (dataRota.code !== "Ok" || !dataRota.routes || dataRota.routes.length === 0) {
+                throw new Error("Não foi possível traçar a rota rodoviária.");
+            }
+
+            document.getElementById('distancia').value = (dataRota.routes[0].distance / 1000).toFixed(1);
+            document.getElementById('tempo').value = Math.ceil(dataRota.routes[0].duration / 60);
+            showToast("Distância e tempo preenchidos!");
+        } catch (erro) {
+            alert("Erro: " + erro.message);
+        } finally {
+            btn.innerText = "📍 Calcular Distância e Tempo Automaticamente";
+            btn.disabled = false;
+        }
     }
 
     function showToast(msg) {
         const t = document.getElementById('toast');
-        t.innerText = msg; t.style.display = 'block';
+        t.innerText = msg;
+        t.style.display = 'block';
         setTimeout(() => t.style.display = 'none', 3000);
     }
 </script>
